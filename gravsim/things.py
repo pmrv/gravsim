@@ -1,13 +1,15 @@
 import math
+from time import sleep
 
-from gravball.vec2d import vec2d
+from gravsim.vec2d import vec2d
 
 class Ball (object):
 
-    def __init__ (self, radius, pos_or_pair = (0, 0), vec_or_pair = (0, 0)):
+    def __init__ (self, radius, position = (0, 0), velocity = (0, 0)):
 
-        self.position = vec2d (pos_or_pair)
-        self.velocity = vec2d (vec_or_pair)
+        self.position = vec2d (position)
+        self.velocity = vec2d (velocity)
+        self.a = {}
         self.radius = radius
 
     def collide (self, p):
@@ -18,7 +20,9 @@ class Ball (object):
 
     def move (self, t):
         # this doesn't seem to be quite right
-        self.position += self.velocity / 2 * t + self.velocity * t
+        a = sum (self.a.values ())
+        self.position += a / 2 * t ** 2 + self.velocity * t
+        self.velocity += a * t
 
     def mirror_velocity (self, k):
         """
@@ -32,6 +36,9 @@ class Ball (object):
             v = vec2d (v)
 
         self.velocity += v
+
+    def accelerate (self, k, accel):
+        self.a [k] = accel
 
     def __getitem__ (self, k):
         return self.position [k]
