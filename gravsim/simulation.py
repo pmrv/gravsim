@@ -26,16 +26,26 @@ class Simulation (object):
 
         #things [0].accelerate ('a', vec2d (0, -11))
 
-        self.xwall = vec2d (fieldsize [0], 0)
-        self.ywall = vec2d (0, fieldsize [1])
+        x1wall = (vec2d (0, 0), vec2d (fieldsize [0], 0))
+        x2wall = (vec2d (0, fieldsize [1]), vec2d (fieldsize [0], 0))
+        y1wall = (vec2d (0, 0), vec2d (0, fieldsize [1]))
+        y2wall = (vec2d (fieldsize [0], 0), vec2d (0, fieldsize [1]))
+
+        self.walls (x1wall, x2wall, y1wall, y2wall)
 
     def step (self):
 
         for thing in self.things:
             self.time += self.stepsize
-            print (self.time, end = "")
 
             trad = thing.radius
+            nextpos = thing.position + thing.velocity * t
+
+            for premise, border in self.walls:
+
+                radius_vector = 
+                present_angle = border.get_angle_between (
+
 
             for axis, wall in enumerate ( (self.ywall, self.xwall) ):
 
