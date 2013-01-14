@@ -20,6 +20,7 @@ class Simulation (object):
         self.fieldsize = fieldsize
         self.g = vec2d (0, 9.81)
         self.stepsize = stepsize
+        self.time = 0
 
         for thing in self.things: thing.accelerate ("g", self.g)
 
@@ -28,31 +29,30 @@ class Simulation (object):
         self.xwall = vec2d (fieldsize [0], 0)
         self.ywall = vec2d (0, fieldsize [1])
 
-        self.time = 0
-
     def step (self):
 
         for thing in self.things:
             self.time += self.stepsize
-            thing.move (self.stepsize)
 
             trad = thing.radius
 
-            if (self.ywall + (thing [0], -trad)) [1] < thing [1]:
-                thing.mirror_velocity (1)
-                thing [1] = self.ywall [1] - thing.radius - 1
+            for axis, wall in enumerate ( (self.ywall, self.xwall) ):
 
-            elif thing [1] - trad < 1:
-                thing.mirror_velocity (1)
-                thing [1] = 0 + thing.radius + 1
+                other = (axis + 1) % 2
+                if (wall + (thing [axis], -trad)) [other] < thing [other]:
+                    thing.mirror_velocity (other)
+                    thing [other] = wall [other] - thing.radius - 1
+                    break
 
-            if (self.xwall + (-trad, thing [1])) [0] < thing [0]:
-                thing.mirror_velocity (0)
-                thing [0] = self.xwall [0] - thing.radius - 1
+                # another generalization needed to get rid of this
+                elif thing [other] - trad < 1:
+                    thing.mirror_velocity (other)
+                    thing [other] = 0 + thing.radius + 1
+                    break
+        else:
+            thing.move (self.stepsize)
 
-            elif thing [0] - trad < 1:
-                thing.mirror_velocity (0)
-                thing [0] = 0 + thing.radius + 1
+    def __repr__ (self):
+        return self.position.__repr__ () + self.velocity.__repr__ ()
 
-            if self.time % 1:
-                print (thing.position, thing.velocity)
+    __str__ = __repr__
