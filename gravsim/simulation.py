@@ -33,6 +33,7 @@ class Simulation (object):
 
         for thing in self.things:
             self.time += self.stepsize
+            print (self.time, end = "")
 
             trad = thing.radius
 
