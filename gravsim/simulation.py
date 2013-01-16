@@ -9,32 +9,24 @@ class Simulation (object):
     and position and velocity parameters
     """
 
-    def __init__(self, things, fieldsize, stepsize = .1):
+    def __init__(self, things, borders, stepsize = .1):
         """
         Constructor.
         
         things -- objects to simulate
-        fieldsize -- two-tuple, size of the world
+        borders -- tuple of vec2d describing where balls should bounce
         stepsize -- time in seconds which shall be simulated in one step
         """
 
         self.things = things
-        self.fieldsize = fieldsize
+        self.walls = borders
         self.g = vec2d (0, 9.81)
         self.stepsize = stepsize
         self.time = 0
 
         for thing in self.things: thing.accelerate ("g", self.g)
 
-        things [0].accelerate ('a', vec2d (0, -11))
-
-        x1wall = (vec2d (0, 0), vec2d (fieldsize [0], 0))
-        x2wall = (vec2d (0, fieldsize [1]), vec2d (fieldsize [0], 0))
-        y1wall = (vec2d (0, 0), vec2d (0, fieldsize [1]))
-        y2wall = (vec2d (fieldsize [0], 0), vec2d (0, fieldsize [1]))
-        diagon = (vec2d (0, 0), vec2d (fieldsize))
-
-        self.walls = (x1wall, x2wall, y1wall, y2wall, diagon)
+        things [0].accelerate ('a', vec2d (1, 0))
 
     def step (self):
 
