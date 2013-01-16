@@ -21,10 +21,9 @@ x1wall = (vec2d (0, 0), vec2d (WIDTH, 0))
 x2wall = (vec2d (0, HEIGHT), vec2d (WIDTH, 0))
 y1wall = (vec2d (0, 0), vec2d (0, HEIGHT))
 y2wall = (vec2d (WIDTH, 0), vec2d (0, HEIGHT))
-diagon = (vec2d (0, 0), vec2d (WIDTH, HEIGHT))
-x3wall = (vec2d (0, 100), vec2d (WIDTH, 0))
+diagon = (vec2d (WIDTH, HEIGHT) / 2, vec2d (WIDTH, HEIGHT))
 
-borders = (x1wall, x2wall, y1wall, y2wall, diagon, x3wall)
+borders = (x1wall, x2wall, y1wall, y2wall, diagon)
 balls = ( Ball (RAD, (320, 120), (10, 10)), Ball (RAD, (350, 50), (10, 0)))
 sim = Simulation (balls, borders, .1)
 

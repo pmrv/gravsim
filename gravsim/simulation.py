@@ -47,5 +47,7 @@ class Simulation (object):
                 sign_p = present_angle / fabs (present_angle) if present_angle != 0 else 1
                 sign_f = future_angle / fabs (future_angle) if future_angle != 0 else -1 * sign_p
                 if sign_p != sign_f or present_angle == 0:
+                    if not premise.length < thing.position.length < (premise + border).length:
+                        continue
                     v_angle = border.get_angle_between (thing.velocity)
                     thing.velocity.rotate (-1 * 2 * v_angle)
