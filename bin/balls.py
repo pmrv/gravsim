@@ -9,21 +9,20 @@ HEIGHT = 400
 WIDTH  = 400
 RAD    =  10
 
-WHITE  = Color (200, 200, 200)
+WHITE  = Color (255, 255, 255)
 BLACK  = Color (000, 000, 000)
 
 CLOCK = pygame.time.Clock ()
 DISPLAY = pygame.display.set_mode ((HEIGHT, WIDTH))
 
-balls = ( Ball (RAD, (200, 200), (0, 0)), )
-#Ball (RAD, (100, 100), (0, 0)))
-sim = Simulation (balls, (HEIGHT, WIDTH), .0001)
+balls = ( Ball (RAD, (100, 70), (10, 10)), Ball (RAD, (50, 100), (10, 0)))
+sim = Simulation (balls, (HEIGHT, WIDTH), .1)
 
 while True:
 
     DISPLAY.fill (WHITE)
     sim.step ()
-    
+
     for b in sim.things:
         pygame.draw.circle (DISPLAY, BLACK, 
                 (ceil (b [0]), ceil (b [1])), b.radius)

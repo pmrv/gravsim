@@ -21,7 +21,7 @@ class Ball (object):
     def move (self, t):
         # this doesn't seem to be quite right
         a = sum (self.a.values ())
-        self.position += a / 2 * t ** 2 + self.velocity * t
+        self.position += (a / 2) * (t ** 2) + self.velocity * t
         self.velocity += a * t
 
     def mirror_velocity (self, k):
