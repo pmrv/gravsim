@@ -7,7 +7,7 @@ from gravsim.vec2d import vec2d
 from gravsim.things import Ball
 from gravsim.simulation import Simulation
 
-HEIGHT = 600
+HEIGHT = 400
 WIDTH  = 400
 RAD    =  10
 
@@ -21,11 +21,12 @@ x1wall = (vec2d (0, 0), vec2d (WIDTH, 0))
 x2wall = (vec2d (0, HEIGHT), vec2d (WIDTH, 0))
 y1wall = (vec2d (0, 0), vec2d (0, HEIGHT))
 y2wall = (vec2d (WIDTH, 0), vec2d (0, HEIGHT))
-diagon = (vec2d (WIDTH, HEIGHT) / 2, vec2d (WIDTH, HEIGHT))
+#diagon = (vec2d (WIDTH, HEIGHT) / 2, vec2d (WIDTH, HEIGHT))
 
-borders = (x1wall, x2wall, y1wall, y2wall, diagon)
-balls = ( Ball (RAD, (320, 120), (10, 10)), Ball (RAD, (350, 50), (10, 0)))
-sim = Simulation (balls, borders, .1)
+borders  = (x1wall, x2wall, y1wall, y2wall)#, diagon)
+gravwell = vec2d (0, 1000)
+balls    = (Ball (RAD, (320, 120), (0, 0)), Ball (RAD, (350, 50), (0, 0)))
+sim = Simulation (gravwell, balls, borders, .1)
 
 while True:
 

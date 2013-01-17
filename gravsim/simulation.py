@@ -9,7 +9,7 @@ class Simulation (object):
     and position and velocity parameters
     """
 
-    def __init__(self, things, borders, stepsize = .1):
+    def __init__(self, gravwell, things, borders, stepsize = .1):
         """
         Constructor.
         
@@ -18,20 +18,21 @@ class Simulation (object):
         stepsize -- time in seconds which shall be simulated in one step
         """
 
-        self.things = things
-        self.walls = borders
-        self.g = vec2d (0, 9.81)
+        self.gravwell = gravwell
+        self.things   = things
+        self.walls    = borders
         self.stepsize = stepsize
-        self.time = 0
-
-        for thing in self.things: thing.accelerate ("g", self.g)
-
-        things [0].accelerate ('a', vec2d (1, 0))
+        self.g        = 9.81 # wrong 
+        self.time     = 0
 
     def step (self):
 
         for thing in self.things:
             self.time += self.stepsize
+
+            grav_dir = (self.gravwell - thing.position).normalized ()
+            grav = self.g * grav_dir
+            thing.accelerate ("g", grav)
             thing.move (self.stepsize)
 
             trad = thing.radius
