@@ -5,12 +5,13 @@ from gravsim.vec2d import vec2d
 
 class Ball (object):
 
-    def __init__ (self, radius, position = (0, 0), velocity = (0, 0)):
+    def __init__ (self, radius, mass, position = (0, 0), velocity = (0, 0)):
 
         self.position = vec2d (position)
         self.velocity = vec2d (velocity)
         self.a = {}
         self.radius = radius
+        self.mass = mass
 
     def collide (self, p):
         
