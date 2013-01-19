@@ -13,6 +13,7 @@ class Simulation (object):
         """
         Constructor.
         
+        gravwell -- two-tuple, position and mass of gravity well
         things -- objects to simulate
         borders -- tuple of vec2d describing where balls should bounce
         stepsize -- time in seconds which shall be simulated in one step
@@ -22,16 +23,24 @@ class Simulation (object):
         self.things   = things
         self.walls    = borders
         self.stepsize = stepsize
-        self.g        = 9.81 # wrong 
+        self.gconst   = 6.67384e-11
         self.time     = 0
+
+    def grav_accel (self, mass1, mass2, radius):
+        """
+        return the accelerations on mass2
+        """
+
+        return (self.gconst * mass1 * mass2 / radius ** 2) / mass2
 
     def step (self):
 
         for thing in self.things:
             self.time += self.stepsize
 
-            grav_dir = (self.gravwell - thing.position).normalized ()
-            grav = self.g * grav_dir
+            grav_dir = (self.gravwell [0] - thing.position)
+            grav = grav_dir.normalized () * self.grav_accel (
+                    self.gravwell [1], thing.mass, grav_dir.length)
             thing.accelerate ("g", grav)
             thing.move (self.stepsize)
 
@@ -52,3 +61,4 @@ class Simulation (object):
                         continue
                     v_angle = border.get_angle_between (thing.velocity)
                     thing.velocity.rotate (-1 * 2 * v_angle)
+
