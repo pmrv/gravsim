@@ -1,5 +1,7 @@
 from math import fabs
 from time import sleep
+from copy import deepcopy
+from itertools import permutations
 from gravsim.vec2d import vec2d
 
 class Simulation (object):
@@ -23,7 +25,7 @@ class Simulation (object):
         self.things   = things
         self.walls    = borders
         self.stepsize = stepsize
-        self.gconst   = 6.67384e-11
+        self.gconst   = 6.67384e-11 * 10e10
         self.time     = 0
 
     def grav_accel (self, mass1, mass2, radius):
@@ -62,3 +64,13 @@ class Simulation (object):
                     v_angle = border.get_angle_between (thing.velocity)
                     thing.velocity.rotate (-1 * 2 * v_angle)
 
+        for thing, other in permutations (self.things, 2):
+            future_thing = deepcopy (thing)
+            future_other = deepcopy (other)
+            future_thing.move (self.stepsize)
+            future_other.move (self.stepsize)
+            vec_dist = abs (future_other.position - future_thing.position)
+            if vec_dist.length - thing.radius - other.radius <= 0: # things collide
+                horizontal = vec_dist.perpendicular_normal ()
+                thing.velocity.rotate (-1 * 2 * horizontal.get_angle_between (thing.velocity))
+                other.velocity.rotate (-1 * 2 * horizontal.get_angle_between (other.velocity))

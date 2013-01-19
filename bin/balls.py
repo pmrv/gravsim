@@ -25,7 +25,7 @@ y2wall = (vec2d (WIDTH, 0), vec2d (0, HEIGHT))
 
 borders   = (x1wall, x2wall, y1wall, y2wall)#, diagon)
 grav_well = (vec2d (200, 100000), 100000000)
-balls     = (Ball (10, RAD, (320, 120), (0, 0)), Ball (10, RAD, (350, 50), (0, 0)))
+balls     = (Ball (RAD, 10, (350, 120), (0, 0)), Ball (RAD, 10, (350, 50), (0, 0)))
 sim = Simulation (grav_well, balls, borders, 1)
 
 while True:
