@@ -1,5 +1,6 @@
 from math import fabs
 from time import sleep
+from decimal import Decimal
 from gravsim.vec2d import vec2d
 
 class Simulation (object):
@@ -23,7 +24,7 @@ class Simulation (object):
         self.things   = things
         self.walls    = borders
         self.stepsize = stepsize
-        self.gconst   = 6.67384e-11
+        self.gconst   = Decimal ('6.67384e-11') * 10000000000
         self.time     = 0
 
     def grav_accel (self, mass1, mass2, radius):
@@ -54,8 +55,8 @@ class Simulation (object):
                 future_angle = border.get_angle_between (
                         thing.position + thing.velocity * self.stepsize / 2 - premise - radius_vector
                 )
-                sign_p = present_angle / fabs (present_angle) if present_angle != 0 else 1
-                sign_f = future_angle / fabs (future_angle) if future_angle != 0 else -1 * sign_p
+                sign_p = present_angle / Decimal (fabs (present_angle)) if present_angle != 0 else 1
+                sign_f = future_angle / Decimal (fabs (future_angle)) if future_angle != 0 else -1 * sign_p
                 if sign_p != sign_f or present_angle == 0:
                     if not premise.length < thing.position.length < (premise + border).length:
                         continue

@@ -1,7 +1,9 @@
 #######################################################################
 # taken from http://eli.thegreenplace.net/2008/12/13/writing-a-game-in-python-with-pygame-part-i/ 
+# extended to use Decimals instead of normal floats
 import operator
 import math
+import decimal
  
 class vec2d(object):
     """2d vector class, supports vector and scalar operators,
@@ -11,11 +13,11 @@ class vec2d(object):
  
     def __init__(self, x_or_pair, y = None):
         if y == None:
-            self.x = x_or_pair[0]
-            self.y = x_or_pair[1]
+            self.x = decimal.Decimal (x_or_pair[0])
+            self.y = decimal.Decimal (x_or_pair[1])
         else:
-            self.x = x_or_pair
-            self.y = y
+            self.x = decimal.Decimal (x_or_pair)
+            self.y = decimal.Decimal (y)
  
     def __len__(self):
         return 2
@@ -30,9 +32,9 @@ class vec2d(object):
  
     def __setitem__(self, key, value):
         if key == 0:
-            self.x = value
+            self.x = decimal.Decimal (value)
         elif key == 1:
-            self.y = value
+            self.y = decimal.Decimal (value)
         else:
             raise IndexError("Invalid subscript "+str(key)+" to vec2d")
  
@@ -60,32 +62,32 @@ class vec2d(object):
     def _o2(self, other, f):
         "Any two-operator operation where the left operand is a vec2d"
         if isinstance(other, vec2d):
-            return vec2d(f(self.x, other.x),
-                         f(self.y, other.y))
+            return vec2d(f(self.x, decimal.Decimal (other.x)),
+                         f(self.y, decimal.Decimal (other.y)))
         elif (hasattr(other, "__getitem__")):
-            return vec2d(f(self.x, other[0]),
-                         f(self.y, other[1]))
+            return vec2d(f(self.x, decimal.Decimal (other[0])),
+                         f(self.y, decimal.Decimal (other[1])))
         else:
-            return vec2d(f(self.x, other),
-                         f(self.y, other))
+            return vec2d(f(self.x, decimal.Decimal (other)),
+                         f(self.y, decimal.Decimal (other)))
  
     def _r_o2(self, other, f):
         "Any two-operator operation where the right operand is a vec2d"
         if (hasattr(other, "__getitem__")):
-            return vec2d(f(other[0], self.x),
-                         f(other[1], self.y))
+            return vec2d(f(decimal.Decimal (other[0]), self.x),
+                         f(decimal.Decimal (other[1]), self.y))
         else:
-            return vec2d(f(other, self.x),
-                         f(other, self.y))
+            return vec2d(f(decimal.Decimal (other), self.x),
+                         f(decimal.Decimal (other), self.y))
  
     def _io(self, other, f):
         "inplace operator"
         if (hasattr(other, "__getitem__")):
-            self.x = f(self.x, other[0])
-            self.y = f(self.y, other[1])
+            self.x = f(self.x, decimal.Decimal (other[0]))
+            self.y = f(self.y, decimal.Decimal (other[1]))
         else:
-            self.x = f(self.x, other)
-            self.y = f(self.y, other)
+            self.x = f(self.x, decimal.Decimal (other))
+            self.y = f(self.y, decimal.Decimal (other))
         return self
  
     # Addition
@@ -93,9 +95,9 @@ class vec2d(object):
         if isinstance(other, vec2d):
             return vec2d(self.x + other.x, self.y + other.y)
         elif hasattr(other, "__getitem__"):
-            return vec2d(self.x + other[0], self.y + other[1])
+            return vec2d(self.x + decimal.Decimal (other[0]), self.y + decimal.Decimal (other[1]))
         else:
-            return vec2d(self.x + other, self.y + other)
+            return vec2d(self.x + decimal.Decimal (other), self.y + decimal.Decimal (other))
     __radd__ = __add__
     
     def __iadd__(self, other):
@@ -103,11 +105,11 @@ class vec2d(object):
             self.x += other.x
             self.y += other.y
         elif hasattr(other, "__getitem__"):
-            self.x += other[0]
-            self.y += other[1]
+            self.x += decimal.Decimal (other[0])
+            self.y += decimal.Decimal (other[1])
         else:
-            self.x += other
-            self.y += other
+            self.x += decimal.Decimal (other)
+            self.y += decimal.Decimal (other)
         return self
  
     # Subtraction
@@ -115,24 +117,26 @@ class vec2d(object):
         if isinstance(other, vec2d):
             return vec2d(self.x - other.x, self.y - other.y)
         elif (hasattr(other, "__getitem__")):
-            return vec2d(self.x - other[0], self.y - other[1])
+            return vec2d(self.x - decimal.Decimal (other[0]), self.y - decimal.Decimal (other[1]))
         else:
-            return vec2d(self.x - other, self.y - other)
+            return vec2d(self.x - decimal.Decimal (other), self.y - decimal.Decimal (other))
     def __rsub__(self, other):
         if isinstance(other, vec2d):
             return vec2d(other.x - self.x, other.y - self.y)
         if (hasattr(other, "__getitem__")):
-            return vec2d(other[0] - self.x, other[1] - self.y)
+            return vec2d(other[0] - decimal.Decimal (self.x), decimal.Decimal (other[1]) - self.y)
         else:
+            other = decimal.Decimal (other)
             return vec2d(other - self.x, other - self.y)
     def __isub__(self, other):
         if isinstance(other, vec2d):
             self.x -= other.x
             self.y -= other.y
         elif (hasattr(other, "__getitem__")):
-            self.x -= other[0]
-            self.y -= other[1]
+            self.x -= decimal.Decimal (other[0])
+            self.y -= decimal.Decimal (other[1])
         else:
+            other = decimal.Decimal (other)
             self.x -= other
             self.y -= other
         return self
@@ -142,8 +146,9 @@ class vec2d(object):
         if isinstance(other, vec2d):
             return vec2d(self.x*other.x, self.y*other.y)
         if (hasattr(other, "__getitem__")):
-            return vec2d(self.x*other[0], self.y*other[1])
+            return vec2d(self.x * decimal.Decimal (other[0]), self.y * decimal.Decimal (other[1]))
         else:
+            other = decimal.Decimal (other)
             return vec2d(self.x*other, self.y*other)
     __rmul__ = __mul__
     
@@ -152,9 +157,10 @@ class vec2d(object):
             self.x *= other.x
             self.y *= other.y
         elif (hasattr(other, "__getitem__")):
-            self.x *= other[0]
-            self.y *= other[1]
+            self.x *= decimal.Decimal (other[0])
+            self.y *= decimal.Decimal (other[1])
         else:
+            other = decimal.Decimal (other)
             self.x *= other
             self.y *= other
         return self
@@ -239,7 +245,7 @@ class vec2d(object):
         return self.x**2 + self.y**2
  
     def get_length(self):
-        return math.sqrt(self.x**2 + self.y**2)    
+        return decimal.Decimal (math.sqrt(self.x**2 + self.y**2))
     def __setlength(self, value):
         length = self.get_length()
         self.x *= value/length
@@ -250,8 +256,8 @@ class vec2d(object):
         radians = math.radians(angle_degrees)
         cos = math.cos(radians)
         sin = math.sin(radians)
-        x = self.x*cos - self.y*sin
-        y = self.x*sin + self.y*cos
+        x = self.x * decimal.Decimal (cos) - self.y * decimal.Decimal (sin)
+        y = self.x * decimal.Decimal (sin) + self.y * decimal.Decimal (cos)
         self.x = x
         self.y = y
  
@@ -259,24 +265,24 @@ class vec2d(object):
         radians = math.radians(angle_degrees)
         cos = math.cos(radians)
         sin = math.sin(radians)
-        x = self.x*cos - self.y*sin
-        y = self.x*sin + self.y*cos
+        x = self.x * decimal.Decimal (cos) - self.y * decimal.Decimal (sin)
+        y = self.x * decimal.Decimal (sin) + self.y * decimal.Decimal (cos)
         return vec2d(x, y)
     
     def get_angle(self):
         if (self.get_length_sqrd() == 0):
             return 0
-        return math.degrees(math.atan2(self.y, self.x))
+        return decimal.Decimal (math.degrees(math.atan2(self.y, self.x)))
     def __setangle(self, angle_degrees):
-        self.x = self.length
-        self.y = 0
+        self.x = decimal.Decimal (self.length)
+        self.y = decimal.Decimal (0)
         self.rotate(angle_degrees)
     angle = property(get_angle, __setangle, None, "gets or sets the angle of a vector")
  
     def get_angle_between(self, other):
-        cross = self.x*other[1] - self.y*other[0]
-        dot = self.x*other[0] + self.y*other[1]
-        return math.degrees(math.atan2(cross, dot))
+        cross = self.x * decimal.Decimal (other[1]) - self.y * decimal.Decimal (other[0])
+        dot = self.x * decimal.Decimal (other[0]) + self.y * decimal.Decimal (other[1])
+        return decimal.Decimal (math.degrees(math.atan2(cross, dot)))
             
     def normalized(self):
         length = self.length
@@ -301,13 +307,13 @@ class vec2d(object):
         return vec2d(self)
         
     def dot(self, other):
-        return float(self.x*other[0] + self.y*other[1])
+        return (self.x * decimal.Decimal (other[0]) + decimal.Decimal (self.y*other[1]))
         
     def get_distance(self, other):
-        return math.sqrt((self.x - other[0])**2 + (self.y - other[1])**2)
+        return decimal.Decimal (math.sqrt((self.x - other[0])**2 + (self.y - other[1])**2))
         
     def get_dist_sqrd(self, other):
-        return (self.x - other[0])**2 + (self.y - other[1])**2
+        return decimal.Decimal ((self.x - other[0])**2 + (self.y - other[1])**2)
         
     def projection(self, other):
         other_length_sqrd = other[0]*other[0] + other[1]*other[1]
