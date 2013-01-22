@@ -17,16 +17,18 @@ BLACK  = Color (000, 000, 000)
 CLOCK = pygame.time.Clock ()
 DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT))
 
+FACTOR = 1/100
+
 x1wall = (vec2d (0, 0), vec2d (WIDTH, 0))
 x2wall = (vec2d (0, HEIGHT), vec2d (WIDTH, 0))
 y1wall = (vec2d (0, 0), vec2d (0, HEIGHT))
 y2wall = (vec2d (WIDTH, 0), vec2d (0, HEIGHT))
 #diagon = (vec2d (WIDTH, HEIGHT) / 2, vec2d (WIDTH, HEIGHT))
 
-borders   = (x1wall, x2wall, y1wall, y2wall)#, diagon)
-grav_well = (vec2d (200, 100000), 100000000)
-balls     = (Ball (RAD, 10, (350, 120), (0, 0)), Ball (RAD, 10, (350, 50), (0, 0)))
-sim = Simulation (grav_well, balls, borders, 1)
+#borders   = (x1wall, x2wall, y1wall, y2wall)#, diagon)
+#grav_well = (vec2d (200, 100000), 100000000)
+balls     = (Ball (RAD, 10, (350, 120), (0, 0)), Ball (RAD, 1, (50, 50), (0, 0)))
+sim = Simulation (balls, borders, 1)
 
 while True:
 
@@ -35,7 +37,7 @@ while True:
 
     for b in sim.things:
         pygame.draw.circle (DISPLAY, BLACK, 
-                (ceil (b [0]), ceil (b [1])), b.radius)
+                (ceil (b [0] * FACTOR), ceil (b [1]) * FACTOR), b.radius)
 
     for w in sim.walls:
         pygame.draw.line (DISPLAY, BLACK,

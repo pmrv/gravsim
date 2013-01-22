@@ -12,7 +12,7 @@ class Simulation (object):
     and position and velocity parameters
     """
 
-    def __init__(self, gravwell, things, borders, stepsize = .1):
+    def __init__(self, things, borders, stepsize = .1):
         """
         Constructor.
         
@@ -22,7 +22,6 @@ class Simulation (object):
         stepsize -- time in seconds which shall be simulated in one step
         """
 
-        self.gravwell = gravwell
         self.things   = things
         self.walls    = borders
         self.stepsize = stepsize
@@ -36,17 +35,15 @@ class Simulation (object):
 
         return (self.gconst * mass1 * mass2 / radius ** 2) / mass2
 
+    def get_grav_force (self, mass1, mass2, radius):
+
+        return (self.gconst * mass1 * mass2 / radius ** 2)
+
     def step (self):
 
         for thing in self.things:
             self.time += self.stepsize
-
-            grav_dir = (self.gravwell [0] - thing.position)
-            grav = grav_dir.normalized () * self.grav_accel (
-                    self.gravwell [1], thing.mass, grav_dir.length)
-            thing.accelerate ("g", grav)
             thing.move (self.stepsize)
-
             trad = thing.radius
 
             for premise, border in self.walls:
@@ -66,6 +63,14 @@ class Simulation (object):
                     thing.velocity.rotate (-1 * 2 * v_angle)
 
         for thing, other in permutations (self.things, 2):
+
+            grav_dir = (other.position - thing.position)
+            grav_dir_norm = grav_dir.normalized ()
+            grav_force = grav_dir * self.get_grav_force (
+                    other.mass, thing.mass, grav_dir.length)
+            thing.accelerate (id (other), grav_force/thing.mass)
+            other.accelerate (id (thing), -grav_force/other.mass)
+
             future_thing = deepcopy (thing)
             future_other = deepcopy (other)
             future_thing.move (self.stepsize)
