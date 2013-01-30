@@ -27,8 +27,8 @@ class Simulation (object):
 
     def get_grav_force (self, mass1, mass2, radius):
 
-        #return (self.gconst * mass1 * mass2 / radius ** 2)
-        return 0
+        return (self.gconst * mass1 * mass2 / radius ** 2)
+        #return 0
 
     def step (self):
         self.time += self.stepsize
@@ -50,7 +50,6 @@ class Simulation (object):
             future_other.move (self.stepsize)
             vec_dist = abs (future_other.position - future_thing.position)
             if vec_dist.length - thing.radius - other.radius <= 0: # things collide
-                sleep (.1)
                 vec_dist_norm = vec_dist.normalized ()
                 tangente_norm = vec_dist_norm.perpendicular_normal ()
 
