@@ -334,6 +334,24 @@ class vec2d(object):
         
     def __setstate__(self, dict):
         self.x, self.y = dict
+
+########
+# added by ponder
+
+def linear_combination (v, a, b):
+    """
+    v, a, b are vec2d
+    return coefficients alpha and beta so that
+    v = alpha * a + beta * b
+    """
+
+    if v == (0, 0): return (0, 0) # null vector
+
+    # not really perfect yet, but I hope it does the trick
+    alpha = (b [1] * v [0] - b [0] * v [1]) / (b [1] * a [0] - b [0] * a [1])
+    beta  = (a [1] * v [0] - a [0] * v [1]) / (a [1] * b [0] - a [0] * b [1])
+
+    return (alpha, beta)
         
 ########################################################################
 ## Unit Testing                                                       ##

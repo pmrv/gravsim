@@ -2,13 +2,14 @@ import pygame
 from pygame.locals import *
 from math import ceil
 from time import sleep
+from decimal import Decimal
 
 from gravsim.vec2d import vec2d
 from gravsim.things import Ball
 from gravsim.simulation import Simulation
 
-HEIGHT = 400
-WIDTH  = 400
+HEIGHT = 700
+WIDTH  = 700
 RAD    =  10
 
 WHITE  = Color (255, 255, 255)
@@ -17,29 +18,21 @@ BLACK  = Color (000, 000, 000)
 CLOCK = pygame.time.Clock ()
 DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT))
 
-x1wall = (vec2d (0, 0), vec2d (WIDTH, 0))
-x2wall = (vec2d (0, HEIGHT), vec2d (WIDTH, 0))
-y1wall = (vec2d (0, 0), vec2d (0, HEIGHT))
-y2wall = (vec2d (WIDTH, 0), vec2d (0, HEIGHT))
-#diagon = (vec2d (WIDTH, HEIGHT) / 2, vec2d (WIDTH, HEIGHT))
-
-borders   = (x1wall, x2wall, y1wall, y2wall)#, diagon)
-grav_well = (vec2d (200, 100000), 100000000)
-balls     = (Ball (10, RAD, (350, 120), (0, 0)), Ball (10, RAD, (350, 50), (0, 0)))
-sim = Simulation (grav_well, balls, borders, 1)
+FACTOR = Decimal (".00001")
+#balls     = (Ball (RAD, 10, (350, 120), (60, 0)), Ball (RAD, 1, (50, 50), (0, 30)), Ball (RAD * 5, 2000, (900, 900), (0, 0)))
+earth = Ball (6371000, 10e24, (40000000, 40000000), (0, 0))
+moon = Ball (1737100, 10e21, (40000000, 20000000), (20220000, 0))
+sim = Simulation ((earth, moon), .01)
 
 while True:
 
     DISPLAY.fill (WHITE)
-    sim.step ()
 
     for b in sim.things:
+        print (b.position)
         pygame.draw.circle (DISPLAY, BLACK, 
-                (ceil (b [0]), ceil (b [1])), b.radius)
-
-    for w in sim.walls:
-        pygame.draw.line (DISPLAY, BLACK,
-                (w [0]), (sum (w)))
+                (ceil (b [0] * FACTOR), ceil (b [1]) * FACTOR), b.radius * FACTOR)
+    sim.step ()
 
     pygame.display.update ()
     CLOCK.tick (60)
