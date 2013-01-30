@@ -18,11 +18,11 @@ BLACK  = Color (000, 000, 000)
 CLOCK = pygame.time.Clock ()
 DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT))
 
-FACTOR = Decimal (".00001")
-#balls     = (Ball (RAD, 10, (350, 120), (60, 0)), Ball (RAD, 1, (50, 50), (0, 30)), Ball (RAD * 5, 2000, (900, 900), (0, 0)))
-earth = Ball (6371000, 10e24, (40000000, 40000000), (0, 0))
-moon = Ball (1737100, 10e21, (40000000, 20000000), (20220000, 0))
-sim = Simulation ((earth, moon), .01)
+FACTOR = Decimal ("1")
+balls  = (Ball (RAD, 10, (50, 190), (0, 0)), Ball (RAD, 10, (50, 50), (0, 30)))
+#earth = Ball (6371000, 10e24, (40000000, 40000000), (0, 0))
+#moon = Ball (1737100, 10e21, (40000000, 20000000), (20220000, 0))
+sim = Simulation (balls, .01)
 
 while True:
 
