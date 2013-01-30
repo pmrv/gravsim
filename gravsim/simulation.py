@@ -28,7 +28,6 @@ class Simulation (object):
     def get_grav_force (self, mass1, mass2, radius):
 
         return (self.gconst * mass1 * mass2 / radius ** 2)
-        #return 0
 
     def step (self):
         self.time += self.stepsize
@@ -49,15 +48,25 @@ class Simulation (object):
             future_thing.move (self.stepsize)
             future_other.move (self.stepsize)
             vec_dist = abs (future_other.position - future_thing.position)
-            if vec_dist.length - thing.radius - other.radius <= 0: # things collide
+            if vec_dist.length - thing.radius - other.radius < 0: # things collide
                 vec_dist_norm = vec_dist.normalized ()
                 tangente_norm = vec_dist_norm.perpendicular_normal ()
+
+                old_thing_velocity = thing.velocity
+                old_other_velocity = other.velocity
 
                 alpha1, beta1 = linear_combination (thing.velocity, tangente_norm, vec_dist_norm)
                 alpha2, beta2 = linear_combination (other.velocity, tangente_norm, vec_dist_norm)
 
-                thing.velocity = vec_dist_norm * beta2 + tangente_norm * alpha1
-                other.velocity = vec_dist_norm * beta1 + tangente_norm * alpha2
+                thing_collide_speed = beta1 * vec_dist_norm # speed component in the direction of other
+                other_collide_speed = beta2 * vec_dist_norm 
+
+                thing.velocity = (tangente_norm * alpha1 +
+                        ((thing.mass - other.mass) * thing_collide_speed + 2 * other.mass * other_collide_speed) / (thing.mass + other.mass)
+                )
+                other.velocity = (tangente_norm * alpha2 + 
+                        ((other.mass - thing.mass) * other_collide_speed + 2 * thing.mass * thing_collide_speed) / (thing.mass + other.mass)
+                )
 
         for thing in self.things:
             thing.move (self.stepsize)
