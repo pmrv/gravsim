@@ -1,45 +1,77 @@
-import pygame
+import pygame, sys
 from pygame.locals import *
-from math import ceil
+from math import ceil, sqrt
 from time import sleep
+from decimal import Decimal
 
 from gravsim.vec2d import vec2d
 from gravsim.things import Ball
 from gravsim.simulation import Simulation
 
-HEIGHT = 400
-WIDTH  = 400
-RAD    =  10
+HEIGHT = Decimal (700)
+WIDTH  = Decimal (700)
+RAD    = Decimal ( 10)
 
 WHITE  = Color (255, 255, 255)
 BLACK  = Color (000, 000, 000)
 
 CLOCK = pygame.time.Clock ()
-DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT))
+DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
-x1wall = (vec2d (0, 0), vec2d (WIDTH, 0))
-x2wall = (vec2d (0, HEIGHT), vec2d (WIDTH, 0))
-y1wall = (vec2d (0, 0), vec2d (0, HEIGHT))
-y2wall = (vec2d (WIDTH, 0), vec2d (0, HEIGHT))
-#diagon = (vec2d (WIDTH, HEIGHT) / 2, vec2d (WIDTH, HEIGHT))
+DISPLAY_BORDER = 50 
+MAX_DISPLAY_LENGTH = Decimal (min (WIDTH, HEIGHT)) / 2
+balls  = (Ball (RAD, 1000000000, (-50, 0), (40, 0)), Ball (RAD, 1, (20, 19), (-40, 0)))#, Ball (RAD, 10, (50, 300), (0, -15)))
+earth = Ball (6371000, 10e24, (0, 0), (0, 0))
+moon  = Ball (1737100, 10e21, (0, 20000000), (20220000, 0))
+astro = Ball (RAD, 1000, (0, 100000), (2000000, 0))
+solar = (earth, astro,)# moon)
+things = balls
+sim = Simulation (things, .01)
 
-borders  = (x1wall, x2wall, y1wall, y2wall)#, diagon)
-gravwell = vec2d (0, 1000)
-balls    = (Ball (RAD, (320, 120), (0, 0)), Ball (RAD, (350, 50), (0, 0)))
-sim = Simulation (gravwell, balls, borders, .1)
+factor = Decimal ("1")
+display_center = vec2d (WIDTH / 2, HEIGHT / 2)
 
 while True:
 
     DISPLAY.fill (WHITE)
-    sim.step ()
+    pygame.draw.line (DISPLAY, BLACK, (0, display_center [1]), 
+            (WIDTH, display_center [1]))
+    pygame.draw.line (DISPLAY, BLACK, (display_center [0], 0), 
+            (display_center [0], HEIGHT))
+    max_position = 0
 
-    for b in sim.things:
+    for event in pygame.event.get ():
+        if event.type == QUIT:
+            pygame.quit ()
+            sys.quit ()
+
+        elif event.type == VIDEORESIZE:
+            WIDTH, HEIGHT = Decimal (event.size [0]), Decimal (event.size [1])
+            DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
+
+        elif event.type == MOUSEBUTTONUP:
+            if event.button == 5:
+                factor *= Decimal ('.9')
+            elif event.button == 4:
+                factor *= Decimal ('1.1')
+            elif event.button == 1:
+                display_center = event.pos - drag_start / 10
+
+        elif event.type == MOUSEBUTTONDOWN:
+            if event.button == 1:
+                drag_start = vec2d (event.pos)
+
+    for t in sim.things:
+        if t.position.length > max_position:
+            max_position = t.position.length
+
+        display_pos = t.position * factor + display_center
         pygame.draw.circle (DISPLAY, BLACK, 
-                (ceil (b [0]), ceil (b [1])), b.radius)
+                (display_pos [0], 
+                 display_pos [1]), 
+                t.radius * factor)
 
-    for w in sim.walls:
-        pygame.draw.line (DISPLAY, BLACK,
-                (w [0]), (sum (w)))
+    sim.step ()
 
     pygame.display.update ()
     CLOCK.tick (60)
