@@ -30,6 +30,7 @@ sim = Simulation (things, .01)
 
 factor = Decimal ("1")
 display_center = vec2d (WIDTH / 2, HEIGHT / 2)
+min_drag = vec2d (10, 10)
 
 while True:
 
@@ -54,12 +55,16 @@ while True:
                 factor *= Decimal ('.9')
             elif event.button == 4:
                 factor *= Decimal ('1.1')
-            elif event.button == 1:
-                display_center = event.pos - drag_start / 10
 
         elif event.type == MOUSEBUTTONDOWN:
             if event.button == 1:
                 drag_start = vec2d (event.pos)
+
+        elif event.type == MOUSEMOTION:
+            if event.buttons [0] and min_drag.length < abs (drag_start - event.pos).length:
+                display_center += (event.pos - drag_start)
+                drag_start = vec2d (event.pos)
+
 
     for t in sim.things:
         if t.position.length > max_position:
