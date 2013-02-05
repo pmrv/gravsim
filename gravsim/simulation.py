@@ -38,7 +38,7 @@ class Simulation (object):
         self.old_impulse = new_impulse
 
         if delta_imp:
-            Exception ("Impulse is off by {}".format (delta_imp))
+            raise Exception ("Impulse is off by {}".format (delta_imp))
 
     def step (self):
         self.time += self.stepsize
@@ -57,7 +57,7 @@ class Simulation (object):
             future_other = deepcopy (other)
             future_thing.move (self.stepsize)
             future_other.move (self.stepsize)
-            vec_dist = abs (future_other.position - future_thing.position)
+            vec_dist = future_other.position - future_thing.position
             if vec_dist.length - thing.radius - other.radius < 0: # things collide
                 vec_dist_norm = vec_dist.normalized ()
                 tangente_norm = vec_dist_norm.perpendicular_normal ()
@@ -81,3 +81,4 @@ class Simulation (object):
 
         for thing in self.things:
             thing.move (self.stepsize)
+
