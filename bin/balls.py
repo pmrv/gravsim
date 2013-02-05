@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, csv
 from pygame.locals import *
 from math import ceil, sqrt
 from time import sleep
@@ -20,14 +20,22 @@ DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
 DISPLAY_BORDER = 50 
 MAX_DISPLAY_LENGTH = Decimal (min (WIDTH, HEIGHT)) / 2
-balls  = (Ball (RAD * Decimal ('10e2'), Decimal ('10e8'), (-100, 0), (40, 0)), 
-          Ball (RAD * 10, 1, (200, 190), (-40, 0)), 
-          Ball (RAD * 10, 10, (500, 300), (0, -15)),)
-earth = Ball (6371000, 10e24, (0, 0), (0, 0))
-moon  = Ball (1737100, 10e21, (0, 20000000), (20220000, 0))
-astro = Ball (RAD, 1000, (0, 100000), (2000000, 0))
-solar = (earth, astro,)# moon)
-things = balls
+
+things = []
+with open ('things/world1', 'r') as f:
+    reader = csv.reader (f)
+    for line in reader:
+        if len (line) < 7:
+            raise Exception ('malformed things csv')
+
+        name    = line [0]
+        radius  = Decimal (line [1])
+        mass    = Decimal (line [2])
+        pos     = line [3:5]
+        vel     = line [5:7]
+
+        things.append (Ball (radius, mass, pos, vel))
+
 sim = Simulation (things, .01)
 
 factor = Decimal ("1")
