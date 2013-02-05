@@ -20,9 +20,9 @@ DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
 DISPLAY_BORDER = 50 
 MAX_DISPLAY_LENGTH = Decimal (min (WIDTH, HEIGHT)) / 2
-balls  = (Ball (RAD, 10e20, (-100, 0), (40, 0)), 
-          Ball (RAD, 1, (200, 19), (-40, 0)), 
-          Ball (RAD, 10, (50, 300), (0, -15)),)
+balls  = (Ball (RAD * Decimal ('10e2'), Decimal ('10e8'), (-100, 0), (40, 0)), 
+          Ball (RAD * 10, 1, (200, 190), (-40, 0)), 
+          Ball (RAD * 10, 10, (500, 300), (0, -15)),)
 earth = Ball (6371000, 10e24, (0, 0), (0, 0))
 moon  = Ball (1737100, 10e21, (0, 20000000), (20220000, 0))
 astro = Ball (RAD, 1000, (0, 100000), (2000000, 0))
@@ -32,6 +32,7 @@ sim = Simulation (things, .01)
 
 factor = Decimal ("1")
 display_center = vec2d (WIDTH / 2, HEIGHT / 2)
+min_drag = vec2d (10, 10)
 
 while True:
 
@@ -56,12 +57,16 @@ while True:
                 factor *= Decimal ('.9')
             elif event.button == 4:
                 factor *= Decimal ('1.1')
-            elif event.button == 1:
-                display_center = event.pos - drag_start / 10
 
         elif event.type == MOUSEBUTTONDOWN:
             if event.button == 1:
                 drag_start = vec2d (event.pos)
+
+        elif event.type == MOUSEMOTION:
+            if event.buttons [0] and min_drag.length < abs (drag_start - event.pos).length:
+                display_center += (event.pos - drag_start)
+                drag_start = vec2d (event.pos)
+
 
     for t in sim.things:
         if t.position.length > max_position:
