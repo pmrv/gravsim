@@ -25,9 +25,20 @@ class Simulation (object):
         self.gconst   = Decimal ('6.67384e-11')
         self.time     = 0
 
+        self.old_impulse = sum (t.mass * t.velocity for t in self.things)
+
     def get_grav_force (self, mass1, mass2, radius):
 
         return (self.gconst * mass1 * mass2 / radius ** 2)
+    
+    def check_impulse (self):
+
+        new_impulse = sum (t.mass * t.velocity for t in self.things)
+        delta_imp = new_impulse - self.old_impulse
+        self.old_impulse = new_impulse
+
+        if delta_imp:
+            Exception ("Impulse is off by {}".format (delta_imp))
 
     def step (self):
         self.time += self.stepsize

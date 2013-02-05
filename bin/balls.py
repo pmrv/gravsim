@@ -20,7 +20,9 @@ DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
 DISPLAY_BORDER = 50 
 MAX_DISPLAY_LENGTH = Decimal (min (WIDTH, HEIGHT)) / 2
-balls  = (Ball (RAD, 1000000000, (-50, 0), (40, 0)), Ball (RAD, 1, (20, 19), (-40, 0)))#, Ball (RAD, 10, (50, 300), (0, -15)))
+balls  = (Ball (RAD, 10e20, (-100, 0), (40, 0)), 
+          Ball (RAD, 1, (200, 19), (-40, 0)), 
+          Ball (RAD, 10, (50, 300), (0, -15)),)
 earth = Ball (6371000, 10e24, (0, 0), (0, 0))
 moon  = Ball (1737100, 10e21, (0, 20000000), (20220000, 0))
 astro = Ball (RAD, 1000, (0, 100000), (2000000, 0))
