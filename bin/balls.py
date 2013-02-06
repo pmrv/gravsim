@@ -29,13 +29,17 @@ things = balls
 sim = Simulation (things, .01)
 
 factor = Decimal ("1")
+display_center = vec2d (WIDTH / 2, HEIGHT / 2)
+min_drag = vec2d (10, 10)
 
 while True:
 
     DISPLAY.fill (WHITE)
+    pygame.draw.line (DISPLAY, BLACK, (0, display_center [1]), 
+            (WIDTH, display_center [1]))
+    pygame.draw.line (DISPLAY, BLACK, (display_center [0], 0), 
+            (display_center [0], HEIGHT))
 
-    grav_center = \
-        sum (t.mass * t.position for t in sim.things) / sum (t.mass for t in sim.things)
     max_position = 0
     #display_center = (WIDTH / 2, HEIGHT / 2) - grav_center
 
@@ -52,20 +56,33 @@ while True:
         elif event.type == VIDEORESIZE:
             WIDTH, HEIGHT = Decimal (event.size [0]), Decimal (event.size [1])
             DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
-            MAX_DISPLAY_LENGTH = Decimal (min (WIDTH, HEIGHT)) / 2
+
+        elif event.type == MOUSEBUTTONUP:
+            if event.button == 5:
+                factor *= Decimal ('.9')
+            elif event.button == 4:
+                factor *= Decimal ('1.1')
+
+        elif event.type == MOUSEBUTTONDOWN:
+            if event.button == 1:
+                drag_start = vec2d (event.pos)
+
+        elif event.type == MOUSEMOTION:
+            if event.buttons [0] and min_drag.length < abs (drag_start - event.pos).length:
+                display_center += (event.pos - drag_start)
+                drag_start = vec2d (event.pos)
+
 
     for t in sim.things:
-        print (t.position)
         if t.position.length > max_position:
             max_position = t.position.length
 
-        display_pos = t.position - grav_center
+        display_pos = t.position * factor + display_center
         pygame.draw.circle (DISPLAY, BLACK, 
-                (display_pos [0] * factor + WIDTH / 2,
-                 display_pos [1] * factor + HEIGHT / 2),
+                (display_pos [0], 
+                 display_pos [1]), 
                 t.radius * factor)
 
-    #factor = MAX_DISPLAY_LENGTH / max_position
     sim.step ()
 
     pygame.display.update ()
