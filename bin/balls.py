@@ -29,6 +29,7 @@ things = balls
 sim = Simulation (things, .01)
 
 factor = Decimal ("1")
+zoom_factor = Decimal (".1")
 display_center = vec2d (WIDTH / 2, HEIGHT / 2)
 min_drag = vec2d (10, 10)
 
@@ -40,14 +41,6 @@ while True:
     pygame.draw.line (DISPLAY, BLACK, (display_center [0], 0), 
             (display_center [0], HEIGHT))
 
-    max_position = 0
-    #display_center = (WIDTH / 2, HEIGHT / 2) - grav_center
-
-    pygame.draw.line (DISPLAY, BLACK, (0, grav_center [1]), 
-            (WIDTH, grav_center [1]))
-    pygame.draw.line (DISPLAY, BLACK, (grav_center [0], 0), 
-            (grav_center [0], HEIGHT))
-
     for event in pygame.event.get ():
         if event.type == QUIT:
             pygame.quit ()
@@ -58,10 +51,9 @@ while True:
             DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
         elif event.type == MOUSEBUTTONUP:
-            if event.button == 5:
-                factor *= Decimal ('.9')
-            elif event.button == 4:
-                factor *= Decimal ('1.1')
+            if event.button in (4, 5):
+                zoom = 1 - zoom_factor if event.button == 5 else 1 + zoom_factor
+                factor *= zoom
 
         elif event.type == MOUSEBUTTONDOWN:
             if event.button == 1:
@@ -72,11 +64,7 @@ while True:
                 display_center += (event.pos - drag_start)
                 drag_start = vec2d (event.pos)
 
-
     for t in sim.things:
-        if t.position.length > max_position:
-            max_position = t.position.length
-
         display_pos = t.position * factor + display_center
         pygame.draw.circle (DISPLAY, BLACK, 
                 (display_pos [0], 
