@@ -18,11 +18,8 @@ BLACK  = Color (000, 000, 000)
 CLOCK = pygame.time.Clock ()
 DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
-DISPLAY_BORDER = 50 
-MAX_DISPLAY_LENGTH = Decimal (min (WIDTH, HEIGHT)) / 2
-
 things = []
-with open ('things/world1', 'r') as f:
+with open ('worlds/world1', 'r') as f:
     reader = csv.reader (f)
     for line in reader:
         if len (line) < 7:
@@ -38,7 +35,7 @@ with open ('things/world1', 'r') as f:
 
 sim = Simulation (things, .01)
 
-factor = Decimal ("1")
+factor = min (HEIGHT, WIDTH) / max (t.position.length for t in sim.things)
 zoom_factor = Decimal (".1")
 display_center = vec2d (WIDTH / 2, HEIGHT / 2)
 min_drag = vec2d (10, 10)
@@ -54,7 +51,7 @@ while True:
     for event in pygame.event.get ():
         if event.type == QUIT:
             pygame.quit ()
-            sys.quit ()
+            sys.exit ()
 
         elif event.type == VIDEORESIZE:
             WIDTH, HEIGHT = Decimal (event.size [0]), Decimal (event.size [1])
