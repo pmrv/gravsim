@@ -1,4 +1,4 @@
-import pygame, sys, csv
+import pygame, sys, csv, os
 from pygame.locals import *
 from math import ceil, sqrt
 from time import sleep
@@ -15,15 +15,20 @@ RAD    = Decimal ( 10)
 WHITE  = Color (255, 255, 255)
 BLACK  = Color (000, 000, 000)
 
-CLOCK = pygame.time.Clock ()
-DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
+world_files = os.listdir ("worlds")
+if len (world_files) == 0:
+    sys.exit ()
+if len (sys.argv) > 1 and sys.argv [1] in world_files:
+    world = sys.argv [1]
+else:
+    world = world_files [0]
 
 things = []
-with open ('worlds/world1', 'r') as f:
+with open ("./worlds/" + world, 'r') as f:
     reader = csv.reader (f)
     for line in reader:
         if len (line) < 7:
-            raise Exception ('malformed things csv')
+            raise Exception ('malformed line in csv')
 
         name    = line [0]
         radius  = Decimal (line [1])
@@ -34,6 +39,10 @@ with open ('worlds/world1', 'r') as f:
         things.append (Ball (radius, mass, pos, vel))
 
 sim = Simulation (things, .01)
+pygame.init ()
+CLOCK = pygame.time.Clock ()
+DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
+
 
 factor = min (HEIGHT, WIDTH) / max (t.position.length for t in sim.things)
 zoom_factor = Decimal (".1")
