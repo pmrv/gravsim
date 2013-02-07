@@ -49,8 +49,8 @@ class Simulation (object):
             grav_dir = (other.position - thing.position)
             grav_dir_norm = grav_dir.normalized ()
             grav_force = grav_dir * self.get_grav_force (other.mass, thing.mass, grav_dir.length)
-            thing.accelerate (id (other), grav_force/thing.mass)
-            other.accelerate (id (thing), -grav_force/other.mass)
+            thing.accelerate (other.name, grav_force/thing.mass)
+            other.accelerate (thing.name, -grav_force/other.mass)
 
             # whether two things collide
             future_thing = deepcopy (thing)

@@ -8,12 +8,27 @@ from gravsim.vec2d import vec2d
 from gravsim.things import Ball
 from gravsim.simulation import Simulation
 
+
+def draw_font (self, text, color, centerx, centery, big = False):
+    """
+    big - bool, whether to use the big font or the small font
+    """
+    
+    if big:
+        font = self.bigfont
+    else:
+        font = self.font
+
+    return font_rect 
+
+
 HEIGHT = Decimal (700)
 WIDTH  = Decimal (700)
 RAD    = Decimal ( 10)
 
 WHITE  = Color (255, 255, 255)
 BLACK  = Color (000, 000, 000)
+RED    = Color (255, 000, 000)
 
 world_files = os.listdir ("worlds")
 if len (world_files) == 0:
@@ -36,13 +51,18 @@ with open ("./worlds/" + world, 'r') as f:
         pos     = line [3:5]
         vel     = line [5:7]
 
-        things.append (Ball (radius, mass, pos, vel))
+        things.append (Ball (name, radius, mass, pos, vel))
 
-sim = Simulation (things, .01)
+sim = Simulation (things, .1)
 pygame.init ()
 CLOCK = pygame.time.Clock ()
 DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
+
+pygame.init ()
+CLOCK = pygame.time.Clock ()
+FONT  = pygame.font.Font (pygame.font.get_default_font (), 11)
+DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
 factor = min (HEIGHT, WIDTH) / max (t.position.length for t in sim.things)
 zoom_factor = Decimal (".1")
@@ -82,10 +102,16 @@ while True:
 
     for t in sim.things:
         display_pos = t.position * factor + display_center
+
         pygame.draw.circle (DISPLAY, BLACK, 
                 (display_pos [0], 
                  display_pos [1]), 
                 t.radius * factor)
+
+        font_render = FONT.render (t.name, True, RED)
+        font_rect = font_render.get_rect ()
+        font_rect.center = display_pos
+        DISPLAY.blit (font_render, font_rect)
 
     sim.step ()
 
