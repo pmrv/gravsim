@@ -8,20 +8,6 @@ from gravsim.vec2d import vec2d
 from gravsim.things import Ball
 from gravsim.simulation import Simulation
 
-
-def draw_font (self, text, color, centerx, centery, big = False):
-    """
-    big - bool, whether to use the big font or the small font
-    """
-    
-    if big:
-        font = self.bigfont
-    else:
-        font = self.font
-
-    return font_rect 
-
-
 HEIGHT = Decimal (700)
 WIDTH  = Decimal (700)
 RAD    = Decimal ( 10)
@@ -53,7 +39,7 @@ with open ("./worlds/" + world, 'r') as f:
 
         things.append (Ball (name, radius, mass, pos, vel))
 
-sim = Simulation (things, .1)
+sim = Simulation (things, Decimal (sys.argv [2]) if len (sys.argv) > 2 else Decimal (".1"))
 pygame.init ()
 CLOCK = pygame.time.Clock ()
 DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)

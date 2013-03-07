@@ -12,7 +12,7 @@ class Simulation (object):
     and position and velocity parameters
     """
 
-    def __init__(self, things, stepsize = .1):
+    def __init__(self, things, stepsize = Decimal (".1")):
         """
         Constructor.
         

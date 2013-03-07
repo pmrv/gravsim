@@ -10,7 +10,7 @@ class Ball (object):
         self.name = name
         self.position = vec2d (position)
         self.velocity = vec2d (velocity)
-        self.a = {}
+        self.a = {True: vec2d (0, 0)} # to prevent that sum (self.a) returns 0.0
         self.radius = Decimal (radius)
         self.mass = Decimal (mass)
 
@@ -21,7 +21,6 @@ class Ball (object):
         return distance < self.radius
 
     def move (self, t):
-        # this doesn't seem to be quite right
         a = sum (self.a.values ())
         self.position += (a / 2) * (t ** 2) + self.velocity * t
         self.velocity += a * t
