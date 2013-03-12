@@ -62,9 +62,6 @@ class Simulation (object):
                 vec_dist_norm = vec_dist.normalized ()
                 tangente_norm = vec_dist_norm.perpendicular_normal ()
 
-                old_thing_velocity = thing.velocity
-                old_other_velocity = other.velocity
-
                 alpha1, beta1 = linear_combination (thing.velocity, tangente_norm, vec_dist_norm)
                 alpha2, beta2 = linear_combination (other.velocity, tangente_norm, vec_dist_norm)
 
