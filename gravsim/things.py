@@ -14,29 +14,10 @@ class Ball (object):
         self.radius = Decimal (radius)
         self.mass = Decimal (mass)
 
-    def collide (self, p):
-        
-        distance = math.sqrt (
-            (self.position [0] - p [0])**2 + (self.position [1] - p [1]) ** 2)
-        return distance < self.radius
-
     def move (self, t):
         a = sum (self.a.values ())
         self.position += (a / 2) * (t ** 2) + self.velocity * t
         self.velocity += a * t
-
-    def mirror_velocity (self, k):
-        """
-        mirrors velocity along a given axis
-        k = 1 X, 0 Y
-        """
-        self.velocity [k] *= -1
-
-    def add_velocity (self, v):
-        if not isinstance (v, vec2d):
-            v = vec2d (v)
-
-        self.velocity += v
 
     def accelerate (self, k, accel):
         self.a [k] = accel
