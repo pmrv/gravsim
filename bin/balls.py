@@ -28,6 +28,7 @@ things = []
 with open ("./worlds/" + world, 'r') as f:
     reader = csv.reader (f)
     for line in reader:
+        if line [0].strip () [0] == '#': continue
         if len (line) < 7:
             raise Exception ('malformed line in csv')
 
