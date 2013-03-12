@@ -48,7 +48,8 @@ DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
 pygame.init ()
 CLOCK = pygame.time.Clock ()
-FONT  = pygame.font.Font (pygame.font.get_default_font (), 11)
+FONT  = pygame.font.Font (pygame.font.get_default_font (), 12)
+BIGFONT  = pygame.font.Font (pygame.font.get_default_font (), 20)
 DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
 
 factor = min (HEIGHT, WIDTH) / max (t.position.length for t in sim.things)
@@ -96,10 +97,14 @@ while True:
                 t.radius * factor)
 
         font_render = FONT.render (t.name, True, RED)
-        font_rect = font_render.get_rect ()
+        font_rect   = font_render.get_rect ()
         font_rect.center = display_pos
         DISPLAY.blit (font_render, font_rect)
 
+    speed_render = BIGFONT.render ("{}".format (sim.stepsize), True, BLACK)
+    speed_rect   = speed_render.get_rect ()
+    speed_rect.bottomleft = (20, HEIGHT - 20)
+    DISPLAY.blit (speed_render, speed_rect)
     sim.step ()
 
     pygame.display.update ()
