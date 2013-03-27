@@ -19,8 +19,8 @@ class Ball (object):
         self.position += (a / 2) * (t ** 2) + self.velocity * t
         self.velocity += a * t
 
-    def accelerate (self, k, accel):
-        self.a [k] = accel
+    def accelerate (self, name, a):
+        self.a [name] = a
 
     def __getitem__ (self, k):
         return self.position [k]
