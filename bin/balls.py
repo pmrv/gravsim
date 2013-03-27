@@ -88,7 +88,7 @@ while True:
                 display_center += (event.pos - drag_start)
                 drag_start = vec2d (event.pos)
 
-    for t in sim.things:
+    for i, t in enumerate (sim.things):
         display_pos = t.position * factor + display_center
 
         pygame.draw.circle (DISPLAY, BLACK, 
@@ -101,12 +101,19 @@ while True:
         font_rect.center = display_pos
         DISPLAY.blit (font_render, font_rect)
 
-    speed_render = BIGFONT.render ("{}".format (sim.stepsize), True, BLACK)
-    speed_rect   = speed_render.get_rect ()
-    speed_rect.bottomleft = (20, HEIGHT - 20)
-    DISPLAY.blit (speed_render, speed_rect)
+        speed_render = BIGFONT.render ("%s: v = %.4f m/s a = %4.4f m/s^2" % (t.name, t.velocity.length, sum (t.a.values ()).length ), True, BLACK)
+        speed_rect   = speed_render.get_rect ()
+        speed_rect.bottomleft = (20, 50 + 30 * i)
+        DISPLAY.blit (speed_render, speed_rect)
+
+    time_render = BIGFONT.render ("dt: {} Time: {}".format (sim.stepsize, sim.time), True, BLACK)
+    time_rect = time_render.get_rect ()
+    time_rect.bottomleft = (20, HEIGHT - 60)
+    DISPLAY.blit (time_render, time_rect)
+
+
     sim.step ()
 
     pygame.display.update ()
-    CLOCK.tick (60)
+    CLOCK.tick (20000)
 

@@ -1,7 +1,7 @@
 from math import fabs
 from time import sleep
 from copy import deepcopy
-from itertools import permutations
+from itertools import combinations
 from decimal import Decimal
 from gravsim.vec2d import vec2d, linear_combination
 
@@ -35,20 +35,21 @@ class Simulation (object):
 
         new_impulse = sum (t.mass * t.velocity for t in self.things)
         delta_imp = new_impulse - self.old_impulse
-        self.old_impulse = new_impulse
+        #self.old_impulse = new_impulse
 
         if delta_imp:
-            raise Exception ("Impulse is off by {}".format (delta_imp))
+            print (delta_imp)
+            #raise Exception ("Impulse is off by {}".format (delta_imp))
 
     def step (self):
         self.time += self.stepsize
 
-        for thing, other in permutations (self.things, 2):
+        for thing, other in combinations (self.things, 2):
 
             # gravitational force
             grav_dir = (other.position - thing.position)
             grav_dir_norm = grav_dir.normalized ()
-            grav_force = grav_dir * self.get_grav_force (other.mass, thing.mass, grav_dir.length)
+            grav_force = grav_dir_norm * self.get_grav_force (other.mass, thing.mass, grav_dir.length)
             thing.accelerate (other.name, grav_force/thing.mass)
             other.accelerate (thing.name, -grav_force/other.mass)
 
@@ -78,4 +79,6 @@ class Simulation (object):
 
         for thing in self.things:
             thing.move (self.stepsize)
+
+        self.check_impulse ()
 
