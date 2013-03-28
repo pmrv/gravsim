@@ -1,119 +1,94 @@
-import pygame, sys, csv, os
+import pygame 
 from pygame.locals import *
-from math import ceil, sqrt
-from time import sleep
 from decimal import Decimal
 
+import gen_client
 from gravsim.vec2d import vec2d
-from gravsim.things import Ball
-from gravsim.simulation import Simulation
 
-HEIGHT = Decimal (700)
-WIDTH  = Decimal (700)
-RAD    = Decimal ( 10)
+class GraphicSim (object):
 
-WHITE  = Color (255, 255, 255)
-BLACK  = Color (000, 000, 000)
-RED    = Color (255, 000, 000)
+    def __init__ (self):
+        self.height = Decimal (700)
+        self.width  = Decimal (700)
+        self.rad    = Decimal ( 10)
 
-world_files = os.listdir ("worlds")
-if len (world_files) == 0:
-    sys.exit ()
-if len (sys.argv) > 1 and sys.argv [1] in world_files:
-    world = sys.argv [1]
-else:
-    world = world_files [0]
+        self.white  = Color (255, 255, 255)
+        self.black  = Color (000, 000, 000)
+        self.red    = Color (255, 000, 000)
 
-things = []
-with open ("./worlds/" + world, 'r') as f:
-    reader = csv.reader (f)
-    for line in reader:
-        if line [0].strip () [0] == '#': continue
-        if len (line) < 7:
-            raise Exception ('malformed line in csv')
+    def init (self, sim):
 
-        name    = line [0]
-        radius  = Decimal (line [1])
-        mass    = Decimal (line [2])
-        pos     = line [3:5]
-        vel     = line [5:7]
+        self.factor = min (self.height, self.width) / max (t.position.length for t in sim.things)
+        self.zoom_factor = Decimal (".1")
+        self.display_center = vec2d (self.width / 2, self.height / 2)
+        self.min_drag = vec2d (10, 10)
+        self.drag_start = (0, 0)
 
-        things.append (Ball (name, radius, mass, pos, vel))
+        pygame.init ()
+        self.clock = pygame.time.Clock ()
+        self.font  = pygame.font.Font (pygame.font.get_default_font (), 12)
+        self.bigfont  = pygame.font.Font (pygame.font.get_default_font (), 20)
+        self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
 
-sim = Simulation (things, Decimal (sys.argv [2]) if len (sys.argv) > 2 else Decimal (".1"))
-pygame.init ()
-CLOCK = pygame.time.Clock ()
-DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
+    def step (self, sim):
+    
+        self.display.fill (self.white)
+        pygame.draw.line (self.display, self.black, (0, self.display_center [1]), 
+                (self.width, self.display_center [1]))
+        pygame.draw.line (self.display, self.black, (self.display_center [0], 0), 
+                (self.display_center [0], self.height))
 
+        for event in pygame.event.get ():
+            if event.type == QUIT:
+                pygame.quit ()
+                sys.exit ()
 
-pygame.init ()
-CLOCK = pygame.time.Clock ()
-FONT  = pygame.font.Font (pygame.font.get_default_font (), 12)
-BIGFONT  = pygame.font.Font (pygame.font.get_default_font (), 20)
-DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
+            elif event.type == VIDEORESIZE:
+                self.width, self.height = Decimal (event.size [0]), Decimal (event.size [1])
+                self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
 
-factor = min (HEIGHT, WIDTH) / max (t.position.length for t in sim.things)
-zoom_factor = Decimal (".1")
-display_center = vec2d (WIDTH / 2, HEIGHT / 2)
-min_drag = vec2d (10, 10)
+            elif event.type == MOUSEBUTTONUP:
+                if event.button in (4, 5):
+                    zoom = 1 + (self.zoom_factor * (-1 if event.button == 5 else 1))
+                    self.factor *= zoom
 
-while True:
+            elif event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.drag_start = vec2d (event.pos)
 
-    DISPLAY.fill (WHITE)
-    pygame.draw.line (DISPLAY, BLACK, (0, display_center [1]), 
-            (WIDTH, display_center [1]))
-    pygame.draw.line (DISPLAY, BLACK, (display_center [0], 0), 
-            (display_center [0], HEIGHT))
+            elif event.type == MOUSEMOTION:
+                if event.buttons [0] and self.min_drag.length < abs (self.drag_start - event.pos).length:
+                    self.display_center += (event.pos - self.drag_start)
+                    self.drag_start = vec2d (event.pos)
 
-    for event in pygame.event.get ():
-        if event.type == QUIT:
-            pygame.quit ()
-            sys.exit ()
+        for i, t in enumerate (sim.things):
+            display_pos = t.position * self.factor + self.display_center
 
-        elif event.type == VIDEORESIZE:
-            WIDTH, HEIGHT = Decimal (event.size [0]), Decimal (event.size [1])
-            DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
+            pygame.draw.circle (self.display, self.black, 
+                    (display_pos [0], 
+                     display_pos [1]), 
+                     t.radius * self.factor)
 
-        elif event.type == MOUSEBUTTONUP:
-            if event.button in (4, 5):
-                zoom = 1 - zoom_factor if event.button == 5 else 1 + zoom_factor
-                factor *= zoom
+            font_render = self.font.render (t.name, True, self.red)
+            font_rect   = font_render.get_rect ()
+            font_rect.center = display_pos
+            self.display.blit (font_render, font_rect)
 
-        elif event.type == MOUSEBUTTONDOWN:
-            if event.button == 1:
-                drag_start = vec2d (event.pos)
+            speed_render = self.bigfont.render (
+                    "%s: v = %.4f m/s a = %4.4f m/s^2" % (t.name, t.velocity.length, sum (t.a.values ()).length ),
+                    True, self.black)
+            speed_rect   = speed_render.get_rect ()
+            speed_rect.bottomleft = (20, 50 + 30 * i)
+            self.display.blit (speed_render, speed_rect)
 
-        elif event.type == MOUSEMOTION:
-            if event.buttons [0] and min_drag.length < abs (drag_start - event.pos).length:
-                display_center += (event.pos - drag_start)
-                drag_start = vec2d (event.pos)
+        time_render = self.bigfont.render ("dt: {} Time: {}".format (sim.stepsize, sim.time), True, self.black)
+        time_rect = time_render.get_rect ()
+        time_rect.bottomleft = (20, self.height - 60)
+        self.display.blit (time_render, time_rect)
 
-    for i, t in enumerate (sim.things):
-        display_pos = t.position * factor + display_center
-
-        pygame.draw.circle (DISPLAY, BLACK, 
-                (display_pos [0], 
-                 display_pos [1]), 
-                t.radius * factor)
-
-        font_render = FONT.render (t.name, True, RED)
-        font_rect   = font_render.get_rect ()
-        font_rect.center = display_pos
-        DISPLAY.blit (font_render, font_rect)
-
-        speed_render = BIGFONT.render ("%s: v = %.4f m/s a = %4.4f m/s^2" % (t.name, t.velocity.length, sum (t.a.values ()).length ), True, BLACK)
-        speed_rect   = speed_render.get_rect ()
-        speed_rect.bottomleft = (20, 50 + 30 * i)
-        DISPLAY.blit (speed_render, speed_rect)
-
-    time_render = BIGFONT.render ("dt: {} Time: {}".format (sim.stepsize, sim.time), True, BLACK)
-    time_rect = time_render.get_rect ()
-    time_rect.bottomleft = (20, HEIGHT - 60)
-    DISPLAY.blit (time_render, time_rect)
+        pygame.display.update ()
+        self.clock.tick (20000)
 
 
-    sim.step ()
-
-    pygame.display.update ()
-    CLOCK.tick (20000)
-
+module = GraphicSim ()
+gen_client.run (module)

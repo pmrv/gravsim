@@ -12,7 +12,7 @@ class Simulation (object):
     and position and velocity parameters
     """
 
-    def __init__(self, things, stepsize = Decimal (".1")):
+    def __init__(self, things, stepsize = Decimal (".1"), verbose = False):
         """
         Constructor.
         
@@ -23,9 +23,13 @@ class Simulation (object):
         self.things   = things
         self.stepsize = stepsize
         self.gconst   = Decimal ('6.67384e-11')
-        self.time     = 0
+        self.verbose  = verbose
 
-        self.old_impulse = sum (t.mass * t.velocity for t in self.things)
+        if self.verbose:
+            self.time     = 0
+            self.old_impulse = sum (t.mass * t.velocity for t in self.things)
+            self.delta_impulse, self.step_delta_impulse = (0,0), (0,0)
+            self.grav_forces = {}
 
     def get_grav_force (self, mass1, mass2, radius):
 
@@ -33,16 +37,12 @@ class Simulation (object):
     
     def check_impulse (self):
 
-        new_impulse = sum (t.mass * t.velocity for t in self.things)
-        delta_imp = new_impulse - self.old_impulse
-        #self.old_impulse = new_impulse
-
-        if delta_imp:
-            print (delta_imp)
-            #raise Exception ("Impulse is off by {}".format (delta_imp))
+        new_impulse   = sum (t.mass * t.velocity for t in self.things)
+        delta_impulse = new_impulse - self.old_impulse
+        self.step_delta_impulse = self.delta_impulse - delta_impulse
+        self.delta_impulse = delta_impulse
 
     def step (self):
-        self.time += self.stepsize
 
         for thing, other in combinations (self.things, 2):
 
@@ -52,6 +52,7 @@ class Simulation (object):
             grav_force = grav_dir_norm * self.get_grav_force (other.mass, thing.mass, grav_dir.length)
             thing.accelerate (other.name, grav_force/thing.mass)
             other.accelerate (thing.name, -grav_force/other.mass)
+            if self.verbose: self.grav_forces [(thing, other)] = grav_force
 
             # whether two things collide
             future_thing = deepcopy (thing)
@@ -80,5 +81,7 @@ class Simulation (object):
         for thing in self.things:
             thing.move (self.stepsize)
 
-        self.check_impulse ()
+        if self.verbose:
+            self.time += self.stepsize
+            self.check_impulse ()
 
