@@ -1,4 +1,4 @@
-import sys, os, csv
+import sys, os, csv, time
 from decimal import Decimal
 
 from gravsim.things import Ball
@@ -35,14 +35,17 @@ def init ():
     sim = Simulation (things, stepsize, verbose = True)
     return sim
 
-def loop (sim, module):
+def loop (sim, modules):
 
     while True:
         sim.step ()
-        module.step (sim)
+        for module in modules: 
+            module.step (sim)
 
-def run (module):
+def run (modules):
 
     sim = init ()
-    module.init (sim)
-    loop (sim, module)
+    for module in modules: 
+        module.init (sim)
+
+    loop (sim, modules)
