@@ -1,83 +1,94 @@
-import pygame, sys
+import pygame 
 from pygame.locals import *
-from math import ceil, sqrt
-from time import sleep
 from decimal import Decimal
 
+import gen_client
 from gravsim.vec2d import vec2d
-from gravsim.things import Ball
-from gravsim.simulation import Simulation
 
-HEIGHT = Decimal (700)
-WIDTH  = Decimal (700)
-RAD    = Decimal ( 10)
+class GraphicSim (object):
 
-WHITE  = Color (255, 255, 255)
-BLACK  = Color (000, 000, 000)
+    def __init__ (self):
+        self.height = Decimal (700)
+        self.width  = Decimal (700)
+        self.rad    = Decimal ( 10)
 
-CLOCK = pygame.time.Clock ()
-DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
+        self.white  = Color (255, 255, 255)
+        self.black  = Color (000, 000, 000)
+        self.red    = Color (255, 000, 000)
 
-DISPLAY_BORDER = 50 
-MAX_DISPLAY_LENGTH = Decimal (min (WIDTH, HEIGHT)) / 2
-balls  = (Ball (RAD, 1000000000, (-50, 0), (40, 0)), Ball (RAD, 1, (20, 19), (-40, 0)))#, Ball (RAD, 10, (50, 300), (0, -15)))
-earth = Ball (6371000, 10e24, (0, 0), (0, 0))
-moon  = Ball (1737100, 10e21, (0, 20000000), (20220000, 0))
-astro = Ball (RAD, 1000, (0, 100000), (2000000, 0))
-solar = (earth, astro,)# moon)
-things = balls
-sim = Simulation (things, .01)
+    def init (self, sim):
 
-factor = Decimal ("1")
-display_center = vec2d (WIDTH / 2, HEIGHT / 2)
-min_drag = vec2d (10, 10)
+        self.factor = min (self.height, self.width) / max (t.position.length for t in sim.things)
+        self.zoom_factor = Decimal (".1")
+        self.display_center = vec2d (self.width / 2, self.height / 2)
+        self.min_drag = vec2d (10, 10)
+        self.drag_start = (0, 0)
 
-while True:
+        pygame.init ()
+        self.clock = pygame.time.Clock ()
+        self.font  = pygame.font.Font (pygame.font.get_default_font (), 12)
+        self.bigfont  = pygame.font.Font (pygame.font.get_default_font (), 20)
+        self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
 
-    DISPLAY.fill (WHITE)
-    pygame.draw.line (DISPLAY, BLACK, (0, display_center [1]), 
-            (WIDTH, display_center [1]))
-    pygame.draw.line (DISPLAY, BLACK, (display_center [0], 0), 
-            (display_center [0], HEIGHT))
-    max_position = 0
+    def step (self, sim):
+    
+        self.display.fill (self.white)
+        pygame.draw.line (self.display, self.black, (0, self.display_center [1]), 
+                (self.width, self.display_center [1]))
+        pygame.draw.line (self.display, self.black, (self.display_center [0], 0), 
+                (self.display_center [0], self.height))
 
-    for event in pygame.event.get ():
-        if event.type == QUIT:
-            pygame.quit ()
-            sys.quit ()
+        for event in pygame.event.get ():
+            if event.type == QUIT:
+                pygame.quit ()
+                sys.exit ()
 
-        elif event.type == VIDEORESIZE:
-            WIDTH, HEIGHT = Decimal (event.size [0]), Decimal (event.size [1])
-            DISPLAY = pygame.display.set_mode ((WIDTH, HEIGHT), RESIZABLE)
+            elif event.type == VIDEORESIZE:
+                self.width, self.height = Decimal (event.size [0]), Decimal (event.size [1])
+                self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
 
-        elif event.type == MOUSEBUTTONUP:
-            if event.button == 5:
-                factor *= Decimal ('.9')
-            elif event.button == 4:
-                factor *= Decimal ('1.1')
+            elif event.type == MOUSEBUTTONUP:
+                if event.button in (4, 5):
+                    zoom = 1 + (self.zoom_factor * (-1 if event.button == 5 else 1))
+                    self.factor *= zoom
 
-        elif event.type == MOUSEBUTTONDOWN:
-            if event.button == 1:
-                drag_start = vec2d (event.pos)
+            elif event.type == MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    self.drag_start = vec2d (event.pos)
 
-        elif event.type == MOUSEMOTION:
-            if event.buttons [0] and min_drag.length < abs (drag_start - event.pos).length:
-                display_center += (event.pos - drag_start)
-                drag_start = vec2d (event.pos)
+            elif event.type == MOUSEMOTION:
+                if event.buttons [0] and self.min_drag.length < abs (self.drag_start - event.pos).length:
+                    self.display_center += (event.pos - self.drag_start)
+                    self.drag_start = vec2d (event.pos)
+
+        for i, t in enumerate (sim.things):
+            display_pos = t.position * self.factor + self.display_center
+
+            pygame.draw.circle (self.display, self.black, 
+                    (display_pos [0], 
+                     display_pos [1]), 
+                     t.radius * self.factor)
+
+            font_render = self.font.render (t.name, True, self.red)
+            font_rect   = font_render.get_rect ()
+            font_rect.center = display_pos
+            self.display.blit (font_render, font_rect)
+
+            speed_render = self.bigfont.render (
+                    "%s: v = %.4f m/s a = %4.4f m/s^2" % (t.name, t.velocity.length, sum (t.a.values ()).length ),
+                    True, self.black)
+            speed_rect   = speed_render.get_rect ()
+            speed_rect.bottomleft = (20, 50 + 30 * i)
+            self.display.blit (speed_render, speed_rect)
+
+        time_render = self.bigfont.render ("dt: {} Time: {}".format (sim.stepsize, sim.time), True, self.black)
+        time_rect = time_render.get_rect ()
+        time_rect.bottomleft = (20, self.height - 60)
+        self.display.blit (time_render, time_rect)
+
+        pygame.display.update ()
+        self.clock.tick (20000)
 
 
-    for t in sim.things:
-        if t.position.length > max_position:
-            max_position = t.position.length
-
-        display_pos = t.position * factor + display_center
-        pygame.draw.circle (DISPLAY, BLACK, 
-                (display_pos [0], 
-                 display_pos [1]), 
-                t.radius * factor)
-
-    sim.step ()
-
-    pygame.display.update ()
-    CLOCK.tick (60)
-
+module = GraphicSim ()
+gen_client.run (module)
