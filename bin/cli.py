@@ -50,6 +50,6 @@ class CLISim (object):
         for k, v in sim.grav_forces.items ():
             print ("\t%s <-> %s: %04f (%04f, %f)" % (k [0].name, k [1].name, v.length, v [0], v [1]))
 
-
-module = CLISim ()
-gen_client.run (module)
+if __name__ == "__main__":
+    module = CLISim ()
+    gen_client.run ([module])
