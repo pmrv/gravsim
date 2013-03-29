@@ -27,7 +27,7 @@ class GraphicSim (object):
         pygame.init ()
         self.clock = pygame.time.Clock ()
         self.font  = pygame.font.Font (pygame.font.get_default_font (), 12)
-        self.bigfont  = pygame.font.Font (pygame.font.get_default_font (), 20)
+        self.bigfont = pygame.font.Font (pygame.font.get_default_font (), 20)
         self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
 
     def step (self, sim):
@@ -68,6 +68,9 @@ class GraphicSim (object):
                     (display_pos [0], 
                      display_pos [1]), 
                      t.radius * self.factor)
+
+            pygame.draw.lines (self.display, self.black, False,
+                    list (map (lambda v: self.factor * vec2d (v) + self.display_center, sim.thing_positions [t.name])), 1)
 
             font_render = self.font.render (t.name, True, self.red)
             font_rect   = font_render.get_rect ()
