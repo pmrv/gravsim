@@ -16,7 +16,7 @@ class Simulation (object):
         """
         Constructor.
         
-        things -- objects to simulate
+        things -- list of Things, objects to simulate
         stepsize -- time in seconds which shall be simulated in one step
         """
 
@@ -43,6 +43,7 @@ class Simulation (object):
         self.delta_impulse = delta_impulse
 
     def step (self):
+        self.time += self.stepsize
 
         for thing, other in combinations (self.things, 2):
 
@@ -82,6 +83,4 @@ class Simulation (object):
             thing.move (self.stepsize)
 
         if self.verbose:
-            self.time += self.stepsize
             self.check_impulse ()
-
