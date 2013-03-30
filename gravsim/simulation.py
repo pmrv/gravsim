@@ -1,6 +1,6 @@
 from math import fabs
 from time import sleep
-from copy import deepcopy, copy
+from copy import deepcopy
 from itertools import combinations
 from decimal import Decimal
 from gravsim.vec2d import vec2d, linear_combination
@@ -16,7 +16,7 @@ class Simulation (object):
         """
         Constructor.
         
-        things -- objects to simulate
+        things -- list of Things, objects to simulate
         stepsize -- time in seconds which shall be simulated in one step
         """
 
@@ -30,7 +30,6 @@ class Simulation (object):
             self.old_impulse = sum (t.mass * t.velocity for t in self.things)
             self.delta_impulse, self.step_delta_impulse = (0,0), (0,0)
             self.grav_forces = {}
-            self.thing_positions = {t.name: [ (t.position.x, t.position.y) ] for t in self.things}
 
     def get_grav_force (self, mass1, mass2, radius):
 
@@ -85,7 +84,3 @@ class Simulation (object):
 
         if self.verbose:
             self.check_impulse ()
-            for t in self.things:
-                self.thing_positions [t.name].append ((t.position.x, t.position.y))
-
-
