@@ -19,13 +19,14 @@ class GraphicSim (object):
 
     def correct_positions (self, pos):
         if len (pos) != 2: raise Exception ("Pos must have len == 2.")
-        return (self.factor * pos [0] + self.display_center.x, self.factor * pos [1] + self.display_center.y)
+        return (self.factor * pos [0] + self.display_correction.x, self.factor * pos [1] + self.display_correction.y)
 
     def init (self, sim):
 
         self.factor = min (self.height, self.width) / max (t.position.length for t in sim.things)
         self.zoom_factor = Decimal (".1")
-        self.display_center = vec2d (self.width / 2, self.height / 2)
+        self.middle = vec2d (self.width / 2, self.height / 2)
+        self.display_center = vec2d (self.middle)
         self.min_drag = vec2d (10, 10)
         self.drag_start = vec2d (0, 0)
         self.thing_orbits = {t.name: [ (t.position.x, t.position.y) ] for t in sim.things}
@@ -70,26 +71,36 @@ class GraphicSim (object):
                 if event.button == 1:
                     for thing, rects in self.buttons.items ():
                         if rects [1].collidepoint (*event.pos):
-                            self.focus = thing
+                            self.focus = thing.position
                             break
                     else: 
+                        if self.focus:
+                            self.display_center = vec2d (self.focus)
                         self.focus = None
                         self.drag_start = vec2d (event.pos)
 
             elif event.type == MOUSEMOTION:
                 if event.buttons [0] and self.min_drag.length < abs (self.drag_start - event.pos).length:
                     drag = event.pos - self.drag_start
-                    self.display_center += (drag)
+                    self.focus 
+                    self.display_center -= drag / self.factor
                     self.drag_start = vec2d (event.pos)
 
         self.display.fill (self.white)
-        pygame.draw.line (self.display, self.black, (0, self.display_center [1]), 
-                (self.width, self.display_center [1]))
-        pygame.draw.line (self.display, self.black, (self.display_center [0], 0), 
-                (self.display_center [0], self.height))
 
-        if self.focus:
-            self.display_center = (self.width / 2, self.height / 2) - self.factor * self.focus.position 
+        pos = self.focus if self.focus else self.display_center
+        self.display_correction = self.middle - self.factor * pos
+        
+        pygame.draw.line (self.display, self.black, (0, self.display_correction [1]), 
+                (self.width, self.display_correction [1]))
+        pygame.draw.line (self.display, self.black, (self.display_correction [0], 0), 
+                (self.display_correction [0], self.height))
+
+        pygame.draw.line (self.display, self.red, (0, self.middle [1]), 
+                (self.width, self.middle [1]))
+        pygame.draw.line (self.display, self.red, (self.middle [0], 0), 
+                (self.middle [0], self.height))
+
 
         for t in sim.things:
 
