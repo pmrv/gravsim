@@ -9,7 +9,7 @@ class CLISim (object):
 
     def init (self, sim):
 
-        self.display_intervall = int (10 * sim.stepsize) if sim.stepsize >= .1 else 1
+        self.display_intervall = int (100 * sim.stepsize) if sim.stepsize >= .01 else 1
         self.last_print = 0
         self.timings = []
 
@@ -41,9 +41,9 @@ class CLISim (object):
             print (
         """
         %s\t@ (%f, %f):
-        \tVelocity:\t(%08.8f, %08.8f)
-        \tAcceleration:\t(%08.8f, %08.8f)
-        """ % (t.name, t.position [0], t.position [1], t.velocity [0], t.velocity [1], a [0], a [1]) 
+        \tVelocity:\t%f (%08.8f, %08.8f)
+        \tAcceleration:\t%f (%08.8f, %08.8f)
+        """ % (t.name, t.position [0], t.position [1], t.velocity.length, t.velocity [0], t.velocity [1], a.length, a [0], a [1]) 
         )
 
         print ("\tForces:")
