@@ -40,7 +40,8 @@ def loop (sim, modules):
     while True:
         sim.step ()
         for module in modules: 
-            module.step (sim)
+            if module.step (sim) == "quit":
+                sys.exit ()
 
 def run (modules):
 
