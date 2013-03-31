@@ -12,18 +12,21 @@ class Simulation (object):
     and position and velocity parameters
     """
 
-    def __init__(self, things, stepsize = Decimal (".1"), verbose = False):
+    def __init__(self, things, stepsize = Decimal (".1"), verbose = False, collision = False):
         """
         Constructor.
         
-        things -- objects to simulate
-        stepsize -- time in seconds which shall be simulated in one step
+        things   -- list of Things, objects to simulate
+        stepsize -- Decimal, time in seconds which shall be simulated in one step
+        verbose  -- bool, whether to collect data about the Things in the simulation
+        collision-- bool, whether to enable collision detection or not (slow)
         """
 
         self.things   = things
         self.stepsize = stepsize
         self.gconst   = Decimal ('6.67384e-11')
         self.verbose  = verbose
+        self.collision= collision
 
         if self.verbose:
             self.time     = 0
@@ -43,6 +46,7 @@ class Simulation (object):
         self.delta_impulse = delta_impulse
 
     def step (self):
+        self.time += self.stepsize
 
         for thing, other in combinations (self.things, 2):
 
@@ -52,7 +56,9 @@ class Simulation (object):
             grav_force = grav_dir_norm * self.get_grav_force (other.mass, thing.mass, grav_dir.length)
             thing.accelerate (other.name, grav_force/thing.mass)
             other.accelerate (thing.name, -grav_force/other.mass)
+
             if self.verbose: self.grav_forces [(thing, other)] = grav_force
+            if not self.collision: continue
 
             # whether two things collide
             future_thing = deepcopy (thing)
@@ -82,6 +88,4 @@ class Simulation (object):
             thing.move (self.stepsize)
 
         if self.verbose:
-            self.time += self.stepsize
             self.check_impulse ()
-
