@@ -55,7 +55,7 @@ class GraphicSim (object):
         for event in pygame.event.get ():
             if event.type == QUIT:
                 pygame.quit ()
-                sys.exit ()
+                return "quit"
 
             elif event.type == VIDEORESIZE:
                 self.width, self.height = Decimal (event.size [0]), Decimal (event.size [1])
