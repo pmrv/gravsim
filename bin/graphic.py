@@ -119,7 +119,7 @@ class GraphicSim (object):
             self.display.blit ( *self.buttons [t] )
 
             pxspeed = self.factor * t.velocity.length
-            if not sim.time % int (pxspeed + 1):
+            if not sim.time % int ( (1 / pxspeed) + 1):
                 self.thing_orbits [t.name].append (
                         (t.position.x, t.position.y)
                 )
