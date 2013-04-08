@@ -50,6 +50,10 @@ class CLISim (object):
         for k, v in sim.grav_forces.items ():
             print ("\t%s <-> %s: %04f (%04f, %f)" % (k [0].name, k [1].name, v.length, v [0], v [1]))
 
+        print ("\nImpulse deviation:")
+        print ("\tThis step:   ", sim.step_delta_impulse)
+        print ("\tSince start: ", sim.delta_impulse)
+
 if __name__ == "__main__":
     module = CLISim ()
     gen_client.run ([module])
