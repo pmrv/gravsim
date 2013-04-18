@@ -1,12 +1,15 @@
+import argparse
 import pygame
 from pygame.locals import *
 from decimal import Decimal
-from time import time
 
 import gen_client
 from gravsim.vec2d import vec2d
 
+
 class GraphicSim (object):
+
+    argparser = argparse.ArgumentParser (add_help = False)
 
     def __init__ (self):
         self.height = Decimal (700)
@@ -21,7 +24,7 @@ class GraphicSim (object):
         if len (pos) != 2: raise Exception ("Pos must have len == 2.")
         return (self.factor * pos [0] + self.display_correction.x, self.factor * pos [1] + self.display_correction.y)
 
-    def init (self, sim):
+    def init (self, sim, args):
 
         self.factor = min (self.height, self.width) / max (t.position.length for t in sim.things)
         self.zoom_factor = Decimal (".1")

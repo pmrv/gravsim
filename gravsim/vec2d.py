@@ -307,7 +307,7 @@ class vec2d(object):
         return vec2d(self)
         
     def dot(self, other):
-        return (self.x * decimal.Decimal (other[0]) + decimal.Decimal (self.y*other[1]))
+        return (self.x * decimal.Decimal (other[0]) + self.y * decimal.Decimal (other[1]))
         
     def get_distance(self, other):
         return decimal.Decimal (math.sqrt((self.x - other[0])**2 + (self.y - other[1])**2))

@@ -27,9 +27,9 @@ class Simulation (object):
         self.gconst   = Decimal ('6.67384e-11')
         self.verbose  = verbose
         self.collision= collision
+        self.time     = 0
 
         if self.verbose:
-            self.time     = 0
             self.old_impulse = sum (t.mass * t.velocity for t in self.things)
             self.delta_impulse, self.step_delta_impulse = (0,0), (0,0)
             self.grav_forces = {}
@@ -52,8 +52,8 @@ class Simulation (object):
 
             # gravitational force
             grav_dir = (other.position - thing.position)
-            grav_dir_norm = grav_dir.normalized ()
-            grav_force = grav_dir_norm * self.get_grav_force (other.mass, thing.mass, grav_dir.length)
+            grav_length = grav_dir.normalize_return_length ()
+            grav_force = grav_dir * self.get_grav_force (other.mass, thing.mass, grav_length)
             thing.accelerate (other.name, grav_force/thing.mass)
             other.accelerate (thing.name, -grav_force/other.mass)
 

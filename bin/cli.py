@@ -1,13 +1,17 @@
 from time import time
+import argparse
 
-import gen_client
+import gen_client as gen_client
+
 
 class CLISim (object):
+
+    argparser = argparse.ArgumentParser (add_help = False)
 
     def __init__ (self):
         pass
 
-    def init (self, sim):
+    def init (self, sim, args):
 
         self.display_intervall = int (100 * sim.stepsize) if sim.stepsize >= .01 else 1
         self.last_print = 0
@@ -45,6 +49,8 @@ class CLISim (object):
         \tAcceleration:\t%f (%08.8f, %08.8f)
         """ % (t.name, t.position [0], t.position [1], t.velocity.length, t.velocity [0], t.velocity [1], a.length, a [0], a [1]) 
         )
+
+        if not sim.verbose: return
 
         print ("\tForces:")
         for k, v in sim.grav_forces.items ():

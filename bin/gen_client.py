@@ -1,27 +1,19 @@
 import sys, os, csv, time
 from decimal import Decimal
+import argparse
 
 from gravsim.things import Ball
 from gravsim.simulation import Simulation
 
-def init ():
-
-    world_files = os.listdir ("worlds")
-    if len (world_files) == 0:
-        print ("No worlds available.")
-        sys.exit ()
-    if len (sys.argv) > 1 and sys.argv [1] in world_files:
-        world = sys.argv [1]
-    else:
-        world = world_files [0]
+def parseworld (worldpath):
 
     things = []
-    with open ("./worlds/" + world, 'r') as f:
+    with open (worldpath, 'r') as f:
         reader = csv.reader (f)
         for line in reader:
             if line [0].strip () [0] == '#': continue
             if len (line) < 7:
-                raise Exception ('malformed line in csv')
+                raise Exception ("Malformed line in world file.")
 
             name    = line [0]
             radius  = Decimal (line [1])
@@ -30,9 +22,34 @@ def init ():
             vel     = line [5:7]
 
             things.append (Ball (name, radius, mass, pos, vel))
+    
+    return things
 
-    stepsize = Decimal (sys.argv [2]) if len (sys.argv) > 2 else Decimal (".1")
-    sim = Simulation (things, stepsize, verbose = True)
+def init (modules):
+
+    parser = argparse.ArgumentParser (
+            description = "Generalized client module to the gravsim simulation.",
+            parents = [mod.argparser for mod in modules])
+
+    parser.add_argument ("world", type = str, 
+            help = "Name of world in the './worlds' directory.")
+    parser.add_argument ("-t", type = float, metavar = "T",
+            default = .1, required = False, dest = "stepsize",
+            help = "Second which are simulated in one step.")
+    parser.add_argument ("-v", action = "store_true", dest = "verbose",
+            help = "Whether the simulation should collect additional information while running.")
+    parser.add_argument ("-c", action = "store_true", dest = "collision",
+            help = "Whether the simulation should account for collision between bodies.")
+
+    args = parser.parse_args ()
+
+    things = parseworld (os.path.join ("worlds", args.world))
+    stepsize = Decimal ("%f" % args.stepsize) # fucking hate floats...
+    sim = Simulation (things, stepsize, verbose = args.verbose, collision = args.collision)
+
+    for module in modules: 
+        module.init (sim, args)
+
     return sim
 
 def loop (sim, modules):
@@ -45,8 +62,7 @@ def loop (sim, modules):
 
 def run (modules):
 
-    sim = init ()
-    for module in modules: 
-        module.init (sim)
+    if not modules: raise Exception ("No modules.")
+    sim = init (modules)
 
     loop (sim, modules)
