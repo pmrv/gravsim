@@ -33,7 +33,6 @@ class GraphicSim (object):
         self.max_orbit_points = 1000
 
         pygame.init ()
-        self.clock = pygame.time.Clock ()
         self.font  = pygame.font.Font (pygame.font.get_default_font (), 12)
         self.bigfont = pygame.font.Font (pygame.font.get_default_font (), 20)
         self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
@@ -49,8 +48,6 @@ class GraphicSim (object):
             self.buttons [t] = (button_render, button_rect)
 
     def step (self, sim):
-
-        if sim.time % 5: return
 
         for event in pygame.event.get ():
             if event.type == QUIT:
@@ -128,8 +125,6 @@ class GraphicSim (object):
                 self.thing_orbits [t.name].pop (0)
 
         pygame.display.update ()
-        self.clock.tick (60)
-
 
 if __name__ == "__main__":
     module = GraphicSim ()

@@ -9,14 +9,13 @@ class CLISim (object):
 
     def init (self, sim):
 
-        self.display_intervall = int (100 * sim.stepsize) if sim.stepsize >= .01 else 1
-        self.last_print = 0
         self.timings = []
+        self.old_time = 0
+        self.old_simtime = 0
 
     def step (self, sim):
 
-        if not sim.time % self.display_intervall:
-            self.print_stats (sim)
+        self.print_stats (sim)
 
     def get_time (self):
         return sum (self.timings) / len (self.timings)
@@ -30,8 +29,10 @@ class CLISim (object):
     def print_stats (self, sim):
 
         new_time = time ()
-        self.mean_time = self.display_intervall / (new_time - self.last_print)
-        self.last_print = new_time
+        new_simtime = sim.time
+        self.mean_time = float (new_simtime - self.old_simtime) / (new_time - self.old_time)
+        self.old_time = new_time
+        self.old_simtime = new_simtime
 
         print ('\033[1;1H\033[J') # clear screen
         print ("dt = %f, time = %f, speed = %f" % (sim.stepsize, sim.time, self.mean_time))

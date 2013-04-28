@@ -37,11 +37,17 @@ def init ():
 
 def loop (sim, modules):
 
+    fps = 60
+    old_time = 0
+
     while True:
         sim.step ()
-        for module in modules: 
-            if module.step (sim) == "quit":
-                sys.exit ()
+        new_time = time.time ()
+        if new_time - old_time > 1 / fps:
+            old_time = new_time
+            for module in modules: 
+                if module.step (sim) == "quit":
+                    sys.exit ()
 
 def run (modules):
 
