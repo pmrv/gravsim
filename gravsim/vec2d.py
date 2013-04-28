@@ -347,9 +347,14 @@ def linear_combination (v, a, b):
 
     if v == (0, 0): return (0, 0) # null vector
 
+    # assuming a is perpendicular to b
+    angle = math.radians (a.get_angle_between (v))
+    alpha = v.length * math.cos (angle)
+    beta  = v.length * math.sin (angle)
+
     # not really perfect yet, but I hope it does the trick
-    alpha = (b [1] * v [0] - b [0] * v [1]) / (b [1] * a [0] - b [0] * a [1])
-    beta  = (a [1] * v [0] - a [0] * v [1]) / (a [1] * b [0] - a [0] * b [1])
+    #alpha = (b [1] * v [0] - b [0] * v [1]) / (b [1] * a [0] - b [0] * a [1])
+    #beta  = (a [1] * v [0] - a [0] * v [1]) / (a [1] * b [0] - a [0] * b [1])
 
     return (alpha, beta)
         
