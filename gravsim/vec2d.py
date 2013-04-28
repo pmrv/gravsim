@@ -307,7 +307,7 @@ class vec2d(object):
         return vec2d(self)
         
     def dot(self, other):
-        return (self.x * decimal.Decimal (other[0]) + decimal.Decimal (self.y*other[1]))
+        return (self.x * decimal.Decimal (other[0]) + self.y * decimal.Decimal (other[1]))
         
     def get_distance(self, other):
         return decimal.Decimal (math.sqrt((self.x - other[0])**2 + (self.y - other[1])**2))
@@ -348,9 +348,9 @@ def linear_combination (v, a, b):
     if v == (0, 0): return (0, 0) # null vector
 
     # assuming a is perpendicular to b
-    angle = math.radians (a.get_angle_between (v))
-    alpha = v.length * math.cos (angle)
-    beta  = v.length * math.sin (angle)
+    angle = decimal.Decimal ("%f" % math.radians (v.get_angle_between (a)))
+    alpha = v.length * decimal.Decimal ("%f" % math.cos (angle))
+    beta  = v.length * decimal.Decimal ("%f" % math.sin (angle))
 
     # not really perfect yet, but I hope it does the trick
     #alpha = (b [1] * v [0] - b [0] * v [1]) / (b [1] * a [0] - b [0] * a [1])

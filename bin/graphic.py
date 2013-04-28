@@ -1,12 +1,15 @@
+import argparse
 import pygame
 from pygame.locals import *
 from decimal import Decimal
-from time import time
 
 import gen_client
 from gravsim.vec2d import vec2d
 
+
 class GraphicSim (object):
+
+    argparser = argparse.ArgumentParser (add_help = False)
 
     def __init__ (self):
         self.height = Decimal (700)
@@ -21,7 +24,7 @@ class GraphicSim (object):
         if len (pos) != 2: raise Exception ("Pos must have len == 2.")
         return (self.factor * pos [0] + self.display_correction.x, self.factor * pos [1] + self.display_correction.y)
 
-    def init (self, sim):
+    def init (self, sim, args):
 
         self.factor = min (self.height, self.width) / max (t.position.length for t in sim.things)
         self.zoom_factor = Decimal (".1")
@@ -79,7 +82,6 @@ class GraphicSim (object):
             elif event.type == MOUSEMOTION:
                 if event.buttons [0] and self.min_drag.length < abs (self.drag_start - event.pos).length:
                     drag = event.pos - self.drag_start
-                    self.focus 
                     self.display_center -= drag / self.factor
                     self.drag_start = vec2d (event.pos)
 
@@ -115,11 +117,11 @@ class GraphicSim (object):
             self.display.blit (name_render, name_rect)
             self.display.blit ( *self.buttons [t] )
 
-            pxspeed = self.factor * t.velocity.length
-            if not sim.time % int ( (1 / pxspeed) + 1):
-                self.thing_orbits [t.name].append (
-                        (t.position.x, t.position.y)
-                )
+            #pxspeed = self.factor * t.velocity.length
+            #if not sim.time % int ( (1 / pxspeed) + 1):
+            self.thing_orbits [t.name].append (
+                    (t.position.x, t.position.y)
+            )
 
             if len (self.thing_orbits [t.name]) > self.max_orbit_points:
                 self.thing_orbits [t.name].pop (0)
