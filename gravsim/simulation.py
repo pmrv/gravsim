@@ -61,6 +61,7 @@ class Simulation (object):
             if not self.collision: continue
 
             # whether two things collide
+            # smarter to work with pos + t * vel as approx
             future_thing = deepcopy (thing)
             future_other = deepcopy (other)
             future_thing.move (self.stepsize)

@@ -10,7 +10,7 @@ class Ball (object):
         self.name = name
         self.position = vec2d (position)
         self.velocity = vec2d (velocity)
-        self.a = {True: vec2d (0, 0)} # to prevent that sum (self.a) returns 0.0
+        self.a = {self: vec2d (0, 0)} # to prevent that sum (self.a) returns 0.0
         self.radius = Decimal (radius)
         self.mass = Decimal (mass)
 
