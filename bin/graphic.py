@@ -1,39 +1,40 @@
-import argparse
-import pygame
 from pygame.locals import *
-from decimal import Decimal
+import pygame
+import numpy
+import time
+import gravsim.view
 
-import gen_client
-from gravsim.vec2d import vec2d
+def length (array, axis = None):
+    return numpy.sqrt ( (array ** 2).sum (axis = axis) )
 
+class GraphicSim (gravsim.view.View):
 
-class GraphicSim (object):
-
-    argparser = argparse.ArgumentParser (add_help = False)
+    def correct_positions (self, pos):
+        return self.factor * pos + self.display_correction
 
     def __init__ (self):
-        self.height = Decimal (700)
-        self.width  = Decimal (700)
-        self.rad    = Decimal ( 10)
+
+        gravsim.view.View.__init__ (self, description = "Pygame Viewer to the gravsim 'engine'.")
+
+        self.height = 700
+        self.width  = 700
+        self.rad    =  10
 
         self.white  = Color (255, 255, 255)
         self.black  = Color (000, 000, 000)
         self.red    = Color (255, 000, 000)
 
-    def correct_positions (self, pos):
-        if len (pos) != 2: raise Exception ("Pos must have len == 2.")
-        return (self.factor * pos [0] + self.display_correction.x, self.factor * pos [1] + self.display_correction.y)
+        self.factor = min (self.height, self.width) / max (l for l in length (self.sim.positions, axis = -1))
+        self.zoom_factor = .1
+        self.middle = numpy.array ( (self.width / 2, self.height / 2), dtype = numpy.float64 )
+        self.display_center = numpy.array ( (0, 0) ) # the point in simulation coordinates to display at the center
+        self.min_drag = numpy.array ( (10, 10) )
 
-    def init (self, sim, args):
-
-        self.factor = min (self.height, self.width) / max (t.position.length for t in sim.things)
-        self.zoom_factor = Decimal (".1")
-        self.middle = vec2d (self.width / 2, self.height / 2)
-        self.display_center = vec2d (self.middle)
-        self.min_drag = vec2d (10, 10)
-        self.drag_start = vec2d (0, 0)
-        self.thing_orbits = {t.name: [ (t.position.x, t.position.y) ] for t in sim.things}
         self.max_orbit_points = 1000
+        self.num_orbit = numpy.zeros ( (len (self.sim.things),), dtype = numpy.int64 )
+        self.past_orbits = numpy.zeros ( (len (self.sim.things), self.max_orbit_points, 2), dtype = numpy.int64 )
+
+        self.last_display = 0
 
         pygame.init ()
         self.font  = pygame.font.Font (pygame.font.get_default_font (), 12)
@@ -41,16 +42,19 @@ class GraphicSim (object):
         self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
 
         self.focus = None
-        self.buttons = {}
-        for t in sim.things:
+        self.buttons = [0] * len (self.sim.things)
+        for name, index in self.sim.things.items ():
 
-            button_render = self.bigfont.render (t.name, True, self.black, self.red)
+            button_render = self.bigfont.render (name, True, self.black, self.red)
             button_rect   = button_render.get_rect ()
-            # if we have a lot Things an enumerate might be better
-            button_rect.topleft = (0, self.height - 50 - 20 * sim.things.index (t))
-            self.buttons [t] = (button_render, button_rect)
+            button_rect.topleft = (0, self.height - 50 - 20 * index)
 
-    def step (self, sim):
+            name_render = self.font.render (name, True, self.red)
+            name_rect   = name_render.get_rect ()
+
+            self.buttons [index] = (button_render, button_rect, name_render, name_rect)
+
+    def step (self):
 
         for event in pygame.event.get ():
             if event.type == QUIT:
@@ -69,25 +73,28 @@ class GraphicSim (object):
 
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    for thing, rects in self.buttons.items ():
+                    for index, rects in enumerate (self.buttons):
                         if rects [1].collidepoint (*event.pos):
-                            self.focus = thing.position
+                            self.focus = self.sim.positions [index]
                             break
                     else: 
-                        if self.focus:
-                            self.display_center = vec2d (self.focus)
+                        if self.focus != None:
+                            self.display_center = self.focus.copy ()
                         self.focus = None
-                        self.drag_start = vec2d (event.pos)
+                        self.drag_start = numpy.array ( [event.pos [0], event.pos [1]] )
 
             elif event.type == MOUSEMOTION:
-                if event.buttons [0] and self.min_drag.length < abs (self.drag_start - event.pos).length:
+                if event.buttons [0] and length (self.min_drag) < length (self.drag_start - event.pos):
                     drag = event.pos - self.drag_start
                     self.display_center -= drag / self.factor
-                    self.drag_start = vec2d (event.pos)
+                    self.drag_start = numpy.array ( [event.pos [0], event.pos [1]] )
 
+        self.sim.step (self.stepsize)
+
+        if round (self.sim.time, 2) % 10 != 0.: return
         self.display.fill (self.white)
 
-        pos = self.focus if self.focus else self.display_center
+        pos = self.focus if self.focus != None else self.display_center
         self.display_correction = self.middle - self.factor * pos
         
         pygame.draw.line (self.display, self.black, (0, self.display_correction [1]), 
@@ -95,39 +102,38 @@ class GraphicSim (object):
         pygame.draw.line (self.display, self.black, (self.display_correction [0], 0), 
                 (self.display_correction [0], self.height))
 
-        pygame.draw.line (self.display, self.red, (0, self.middle [1]), 
-                (self.width, self.middle [1]))
-        pygame.draw.line (self.display, self.red, (self.middle [0], 0), 
-                (self.middle [0], self.height))
+        for name, index in self.sim.things.items ():
 
+            pos = self.sim.positions [index]
+            display_pos = numpy.cast [numpy.int64] (self.correct_positions (pos))
+            rad = int (self.sim.radii [index] * self.factor)
+            pygame.draw.circle (self.display, self.black, display_pos, rad)
 
-        for t in sim.things:
+            #pygame.draw.lines (self.display, self.black, False,
+            #        list (map (self.correct_positions, self.past_orbits [index])) + [display_pos], 
+            #        1)
 
-            display_pos = self.correct_positions (t.position)
-            pygame.draw.circle (self.display, self.black, display_pos,
-                    t.radius * self.factor)
-
-            pygame.draw.lines (self.display, self.black, False,
-                         list (map (self.correct_positions, self.thing_orbits [t.name] + [t.position])), 
-                         1)
-
-            name_render = self.font.render (t.name, True, self.red)
-            name_rect   = name_render.get_rect ()
+            *button, name_render, name_rect = self.buttons [index]
             name_rect.center = display_pos
             self.display.blit (name_render, name_rect)
-            self.display.blit ( *self.buttons [t] )
+            self.display.blit (*button)
 
-            #pxspeed = self.factor * t.velocity.length
-            #if not sim.time % int ( (1 / pxspeed) + 1):
-            self.thing_orbits [t.name].append (
-                    (t.position.x, t.position.y)
-            )
+            #pxspeed = self.factor * length (self.sim.velocities [index])
+            #if not self.sim.time % int ( (1 / pxspeed) + 1):
+            #    self.past_orbits [index, self.num_orbit [index]] = pos
+            #    self.num_orbit [index] = (self.num_orbit [index] + 1) % self.max_orbit_points
 
-            if len (self.thing_orbits [t.name]) > self.max_orbit_points:
-                self.thing_orbits [t.name].pop (0)
-
+        
+        delta = time.time () - self.last_display
+        time_render = self.bigfont.render (str (10/delta), True, self.black)
+        time_rect   = time_render.get_rect ()
+        time_rect.topleft = (0, 0)
+        self.display.blit (time_render, time_rect)
         pygame.display.update ()
 
+        self.last_display = time.time ()
+
 if __name__ == "__main__":
-    module = GraphicSim ()
-    gen_client.run ([module])
+    s = GraphicSim ()
+    while 1:
+        s.step ()

@@ -11,7 +11,7 @@ class FastCLI:
         self.start = time ()
 
     def step (self, sim):
-        if sim.time < 1e5:
+        if sim.time < 1e3:
             return
 
         diff = time () - self.start
