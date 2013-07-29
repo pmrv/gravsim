@@ -16,6 +16,13 @@ class View:
         #        help = "Whether the simulation should account for collision between bodies.")
             
         args = parser.parse_args ()
+        self.__dict__.update (vars (args))
 
-        self.stepsize = args.stepsize
-        self.sim = gravsim.sim.Sim (args.world)
+        self.sim = gravsim.sim.Sim (self.world)
+
+
+    def step (self, t):
+        self.sim.step (t)
+
+    def run (self):
+        while 1: self.step (self.stepsize)

@@ -34,6 +34,7 @@ class GraphicSim (gravsim.view.View):
         self.num_orbit = numpy.zeros ( (len (self.sim.things),), dtype = numpy.int64 )
         self.past_orbits = numpy.zeros ( (len (self.sim.things), self.max_orbit_points, 2), dtype = numpy.int64 )
 
+        self.displaytime = 20
         self.last_display = 0
 
         pygame.init ()
@@ -91,7 +92,9 @@ class GraphicSim (gravsim.view.View):
 
         self.sim.step (self.stepsize)
 
-        if round (self.sim.time, 2) % 10 != 0.: return
+        # this is somewhat unflexible..
+        if round (self.sim.time, 2) % self.displaytime != 0.: return
+
         self.display.fill (self.white)
 
         pos = self.focus if self.focus != None else self.display_center
@@ -125,7 +128,7 @@ class GraphicSim (gravsim.view.View):
 
         
         delta = time.time () - self.last_display
-        time_render = self.bigfont.render (str (10/delta), True, self.black)
+        time_render = self.bigfont.render (str (self.displaytime/delta), True, self.black)
         time_rect   = time_render.get_rect ()
         time_rect.topleft = (0, 0)
         self.display.blit (time_render, time_rect)
@@ -135,5 +138,4 @@ class GraphicSim (gravsim.view.View):
 
 if __name__ == "__main__":
     s = GraphicSim ()
-    while 1:
-        s.step ()
+    s.run ()
