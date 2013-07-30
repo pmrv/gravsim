@@ -1,3 +1,4 @@
+import time
 import argparse
 import gravsim.sim
 
@@ -10,19 +11,34 @@ class View:
         parser.add_argument ("world", type = str, 
                 help = "Path to world file.")
         parser.add_argument ("-t", type = float, metavar = "T",
-                default = .1, required = False, dest = "stepsize",
+                default = .1, dest = "stepsize",
                 help = "Second which are simulated in one step.")
-        #parser.add_argument ("-c", action = "store_true", dest = "collision",
-        #        help = "Whether the simulation should account for collision between bodies.")
+        parser.add_argument ("-f", type = int, 
+                default = 20, dest = "fps",
+                help = "How many times in a second the view code should run.")
             
         args = parser.parse_args ()
         self.__dict__.update (vars (args))
 
         self.sim = gravsim.sim.Sim (self.world)
+        self.lastrun = 0
+        self.lastsim = 0
 
-
-    def step (self, t):
-        self.sim.step (t)
+    def step (self, deltareal, deltasim):
+        """
+        deltasim  -- float, sim secs passed since the last call to this function
+        """
+        pass # overwriten by subclasses
 
     def run (self):
-        while 1: self.step (self.stepsize)
+        try:
+            while 1: 
+                self.sim.step (self.stepsize)
+                now = time.time ()
+                deltareal = now - self.lastrun
+                if deltareal > 1 / self.fps:
+                    self.step (self.sim.time - self.lastsim)
+                    self.lastsim = self.sim.time
+                    self.lastrun = now
+        except KeyboardInterrupt:
+            print ("")

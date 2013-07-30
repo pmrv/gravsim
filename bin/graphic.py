@@ -7,7 +7,7 @@ import gravsim.view
 def length (array, axis = None):
     return numpy.sqrt ( (array ** 2).sum (axis = axis) )
 
-class GraphicSim (gravsim.view.View):
+class GraphicView (gravsim.view.View):
 
     def correct_positions (self, pos):
         return self.factor * pos + self.display_correction
@@ -31,11 +31,8 @@ class GraphicSim (gravsim.view.View):
         self.min_drag = numpy.array ( (10, 10) )
 
         self.max_orbit_points = 1000
-        self.num_orbit = numpy.zeros ( (len (self.sim.things),), dtype = numpy.int64 )
-        self.past_orbits = numpy.zeros ( (len (self.sim.things), self.max_orbit_points, 2), dtype = numpy.int64 )
-
-        self.displaytime = 20
-        self.last_display = 0
+        self.num_orbit = numpy.zeros ( (len (self.sim.names),), dtype = numpy.int64 )
+        self.past_orbits = numpy.zeros ( (len (self.sim.names), self.max_orbit_points, 2), dtype = numpy.int64 )
 
         pygame.init ()
         self.font  = pygame.font.Font (pygame.font.get_default_font (), 12)
@@ -43,8 +40,8 @@ class GraphicSim (gravsim.view.View):
         self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
 
         self.focus = None
-        self.buttons = [0] * len (self.sim.things)
-        for name, index in self.sim.things.items ():
+        self.buttons = [0] * len (self.sim.names)
+        for name, index in self.sim.names.items ():
 
             button_render = self.bigfont.render (name, True, self.black, self.red)
             button_rect   = button_render.get_rect ()
@@ -55,7 +52,7 @@ class GraphicSim (gravsim.view.View):
 
             self.buttons [index] = (button_render, button_rect, name_render, name_rect)
 
-    def step (self):
+    def step (self, deltasim):
 
         for event in pygame.event.get ():
             if event.type == QUIT:
@@ -63,7 +60,7 @@ class GraphicSim (gravsim.view.View):
                 return "quit"
 
             elif event.type == VIDEORESIZE:
-                self.width, self.height = Decimal (event.size [0]), Decimal (event.size [1])
+                self.width, self.height = event.size
                 self.display = pygame.display.set_mode ((self.width, self.height), RESIZABLE)
 
             elif event.type == MOUSEBUTTONUP:
@@ -90,11 +87,6 @@ class GraphicSim (gravsim.view.View):
                     self.display_center -= drag / self.factor
                     self.drag_start = numpy.array ( [event.pos [0], event.pos [1]] )
 
-        self.sim.step (self.stepsize)
-
-        # this is somewhat unflexible..
-        if round (self.sim.time, 2) % self.displaytime != 0.: return
-
         self.display.fill (self.white)
 
         pos = self.focus if self.focus != None else self.display_center
@@ -105,7 +97,7 @@ class GraphicSim (gravsim.view.View):
         pygame.draw.line (self.display, self.black, (self.display_correction [0], 0), 
                 (self.display_correction [0], self.height))
 
-        for name, index in self.sim.things.items ():
+        for name, index in self.sim.names.items ():
 
             pos = self.sim.positions [index]
             display_pos = numpy.cast [numpy.int64] (self.correct_positions (pos))
@@ -127,8 +119,7 @@ class GraphicSim (gravsim.view.View):
             #    self.num_orbit [index] = (self.num_orbit [index] + 1) % self.max_orbit_points
 
         
-        delta = time.time () - self.last_display
-        time_render = self.bigfont.render (str (self.displaytime/delta), True, self.black)
+        time_render = self.bigfont.render (str (deltasim * self.fps // 1.), True, self.black)
         time_rect   = time_render.get_rect ()
         time_rect.topleft = (0, 0)
         self.display.blit (time_render, time_rect)
@@ -137,5 +128,5 @@ class GraphicSim (gravsim.view.View):
         self.last_display = time.time ()
 
 if __name__ == "__main__":
-    s = GraphicSim ()
+    s = GraphicView ()
     s.run ()
