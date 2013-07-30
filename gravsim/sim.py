@@ -51,3 +51,9 @@ class Sim:
         self.positions  += a / 2 * t ** 2 + self.velocities * t
         self.velocities += a * t
 
+    def get_allimpulse (self):
+
+        vel = sqrt ( (self.velocities ** 2).sum (axis = -1) )
+        imp = self.masses * vel
+        return sum (imp)
+

@@ -11,6 +11,7 @@ class CLIView (gravsim.view.View):
 
         self.timings = []
         self.display_time = 100
+        self.firstimpulse = self.sim.get_allimpulse ()
 
     def step (self, deltasim):
 
@@ -41,11 +42,9 @@ class CLIView (gravsim.view.View):
         for line in data:
             print ("|".join (line))
 
-        """
-        print ("\nImpulse deviation:")
-        print ("\tThis step:   ", sim.step_delta_impulse)
-        print ("\tSince start: ", sim.delta_impulse)
-        """
+        print ("====")
+        print (self.firstimpulse, self.sim.get_allimpulse ())
+        print ("impulse deviation since the beginning: %f" % ((self.firstimpulse - self.sim.get_allimpulse ()) / self.firstimpulse))
 
 if __name__ == "__main__":
     view = CLIView ()

@@ -18,7 +18,7 @@ class SpeedView (gravsim.view.View):
     def run (self):
         before = time.time ()
         while self.sim.time < self.tmax:
-            self.step (self.stepsize)
+            self.sim.step (self.stepsize)
 
         print ( self.sim.time / (time.time () - before) )
 

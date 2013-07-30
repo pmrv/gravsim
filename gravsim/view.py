@@ -24,7 +24,7 @@ class View:
         self.lastrun = 0
         self.lastsim = 0
 
-    def step (self, deltareal, deltasim):
+    def step (self, deltasim):
         """
         deltasim  -- float, sim secs passed since the last call to this function
         """
