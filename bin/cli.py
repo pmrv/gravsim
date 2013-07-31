@@ -1,66 +1,51 @@
-from time import time
-import argparse
+import time
+import functools
+import math
+import gravsim.view
 
-import gen_client as gen_client
-
-
-class CLISim (object):
-
-    argparser = argparse.ArgumentParser (add_help = False)
+class CLIView (gravsim.view.View):
 
     def __init__ (self):
-        pass
 
-    def init (self, sim, args):
+        gravsim.view.View.__init__ (self, description = "CLI View to the gravsim 'engine'.")
 
         self.timings = []
-        self.old_time = 0
-        self.old_simtime = 0
+        self.display_time = 100
+        self.firstimpulse = self.sim.get_allimpulse ()
 
-    def step (self, sim):
+    def step (self, deltasim):
 
-        self.print_stats (sim)
+        print ("\033[1;1H\033[J", end = "") # clear screen
+        print ("time step: %f, sim time: %f, sim sec per real sec: %f" % (self.stepsize, self.sim.time, deltasim * self.fps // 1.))
 
-    def get_time (self):
-        return sum (self.timings) / len (self.timings)
+        print ("====")
 
-    def set_time (self, print_time):
-        self.timings.append (print_time)
-        if len (self.timings) > 100: self.timings.pop (0)
-    # wooho
-    mean_time = property (get_time, set_time)
+        heads = ["Name", "Radius", "Mass", "Distance", "Velocity", "Position"]
+        for i, h in enumerate (heads):
+            heads [i] = h.center (12 if i < 5 else 23)
 
-    def print_stats (self, sim):
+        data = [heads]
+        field  = functools.partial ( "{:^12,.5}".format )
+        dfield = functools.partial ( "{:+11,.5},{:+11,.5}".format )
+        for name, i in self.sim.names.items ():
 
-        new_time = time ()
-        new_simtime = sim.time
-        self.mean_time = float (new_simtime - self.old_simtime) / (new_time - self.old_time)
-        self.old_time = new_time
-        self.old_simtime = new_simtime
+            line = [
+                    "{:^12}".format (name),
+                    field  (self.sim.radii  [i]),
+                    field  (self.sim.masses [i]),
+                    field  (math.sqrt (sum (self.sim.positions  [i] ** 2)) ),
+                    field  (math.sqrt (sum (self.sim.velocities [i] ** 2)) ),
+                    dfield (*self.sim.positions [i]),
+                   ]
+            data.append (line)
 
-        print ('\033[1;1H\033[J') # clear screen
-        print ("dt = %f, time = %f, speed = %f" % (sim.stepsize, sim.time, self.mean_time))
+        for line in data:
+            print ("|".join (line))
 
-        for t in sim.things:
-            a = sum (t.a.values ())
-            print (
-        """
-        %s\t@ (%f, %f):
-        \tVelocity:\t%f (%08.8f, %08.8f)
-        \tAcceleration:\t%f (%08.8f, %08.8f)
-        """ % (t.name, t.position [0], t.position [1], t.velocity.length, t.velocity [0], t.velocity [1], a.length, a [0], a [1]) 
-        )
-
-        if not sim.verbose: return
-
-        print ("\tForces:")
-        for k, v in sim.grav_forces.items ():
-            print ("\t%s <-> %s: %04f (%04f, %f)" % (k [0].name, k [1].name, v.length, v [0], v [1]))
-
-        print ("\nImpulse deviation:")
-        print ("\tThis step:   ", sim.step_delta_impulse)
-        print ("\tSince start: ", sim.delta_impulse)
+        print ("====")
+        print (self.firstimpulse, self.sim.get_allimpulse ())
+        print ("impulse deviation since the beginning: %f" % ((self.firstimpulse - self.sim.get_allimpulse ()) / self.firstimpulse))
 
 if __name__ == "__main__":
-    module = CLISim ()
-    gen_client.run ([module])
+    view = CLIView ()
+    view.run ()
